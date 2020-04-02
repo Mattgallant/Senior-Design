@@ -8,8 +8,7 @@ sampsPerSym = 6;    % Upsampling factor - aslso helps to smoothen out the graph
 DataL = 8;             % Data length in symbols
 R = 500;               % Data rate
 Fs = R * sampsPerSym;   % Sampling frequency
-Fc = 9000;               %Carrier frequency, 9kHz
-n = 0:(DataL*Fs/R-1);
+Fc = 1000;               %Carrier frequency, 1kHz
 
 %Example Bitstream mapped with BPSK
 %Note: must be a column vector e.g. (1,elements)
@@ -45,8 +44,11 @@ sum(bNorm.Numerator)
 yc = rctFilt3([x; zeros(Nsym/2,1)]);
 % Correct for propagation delay by removing filter transients
 yc = yc(fltDelay*Fs+1:end);
-%message filter * carrier wave 
-message = yc.*cos(2*pi*Fc/Fs*n);
+%message, phase modulation of filtered signal
+phasedev = pi/2;
+signal = yc*cos(2*pi*n*Fc);
+message = pmmod(signal,Fc,Fs,phasedev);
+
 
 figure(1)
 % Plot data.
@@ -60,7 +62,7 @@ legend('Mapped-Bitstream', 'Sqrt. Raised Cosine', 'Location', 'southeast');
 
 %figure(2)
 %modulate on cosine carrier of 8kHz
-%plot(message, 'm-'); hold on;
+%plot(message); hold off;
 %axis([-1 DataL*8 -1.7 1.7]); xlabel('Time (ms)'); ylabel('Amplitude');
 %legend('Modulated SRRC Data','Location','southeast');
 
