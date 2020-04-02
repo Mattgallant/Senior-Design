@@ -30,7 +30,8 @@ function bitstream = file_bitstream(filename,read_length)
     %Convert ascii_text array into unsigned int8 array representing bits
     %Adapted from Walter Robinson = https://www.mathworks.com/matlabcentral/answers/305999-how-to-convert-a-string-to-binary-and-then-from-the-binary-back-to-string
     bitstream = reshape(dec2bin(ascii_text,8).'-'0',1,[]);
-    %Print binary_text (optional)
+    bitstream = bitstream';
+    %Print bitstream (optional)
     %fprintf("\n\n");
-    %fprintf("%d, ",binary_text);
+    %fprintf("%d, ",bitstream);
 end

@@ -19,6 +19,9 @@ fprintf("%d, ",ascii_text);
 %Convert ascii_text array into unsigned int8 array representing bits
 %Adapted from Walter Robinson = https://www.mathworks.com/matlabcentral/answers/305999-how-to-convert-a-string-to-binary-and-then-from-the-binary-back-to-string
 binary_text = reshape(dec2bin(ascii_text,8).'-'0',1,[]);
+binary_text = binary_text';
 %Print binary_text (optional)
 fprintf("\n\n");
 fprintf("%d, ",binary_text);
+fprintf("\n");
+fprintf("%d ",size(binary_text));

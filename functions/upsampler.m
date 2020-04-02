@@ -6,13 +6,13 @@ function user_upsampled_bitstream = upsampler(bitstream,upsample_factor,user)
        user = true;
     end
     if user == true
-        user_upsampled_bitstream = zeros(1,upsample_length);
+        user_upsampled_bitstream = zeros(upsample_length,1);
         index = 1;
         for i = 1 : length(bitstream)
-            user_upsampled_bitstream(1,index) = bitstream(1,i);
+            user_upsampled_bitstream(index,1) = bitstream(i,1);
             index = index + 1;
             for b = 1 : 2
-                user_upsampled_bitstream(1, index) = 0;
+                user_upsampled_bitstream(index,1) = 0;
                 index = index + 1;
             end
         end
