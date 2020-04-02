@@ -8,7 +8,7 @@ upsample_length = upsample_factor * length(bitstream);
 %Uses MATLAB function upsample
 upsampled_bitstream = upsample(bitstream,upsample_factor);
 %Create user upsampled bitstream from function user_upsample
-user_upsampled_bitstream = user_upsample(bitstream,upsample_factor,true);
+user_upsampled_bitstream = user_upsample(bitstream,upsample_factor);
 %Test user created upsample-function against MATLAB upsample function
 %Output = "" => pass, Output = "fail" => fail
 for i = 1 : upsample_length
@@ -21,6 +21,9 @@ end
 %User-created upsample function
 function user_upsampled_bitstream = user_upsample(bitstream,upsample_factor,user)
     upsample_length = upsample_factor * length(bitstream);
+    if nargin == 2
+       user = true;
+    end
     if user == true
         user_upsampled_bitstream = zeros(1,upsample_length);
         index = 1;

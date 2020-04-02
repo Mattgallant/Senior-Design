@@ -1,6 +1,10 @@
 %User-created upsample function
+%if the arguement 'user' is not passed, user defaults to true
 function user_upsampled_bitstream = upsampler(bitstream,upsample_factor,user)
     upsample_length = upsample_factor * length(bitstream);
+    if nargin == 2
+       user = true;
+    end
     if user == true
         user_upsampled_bitstream = zeros(1,upsample_length);
         index = 1;
