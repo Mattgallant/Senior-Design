@@ -1,5 +1,9 @@
-%NOTE this script is adapted almost word-for-word from the MATLAB example here:
+%NOTE this script's math is is adapted almost word-for-word from the MATLAB example here:
 %https://www.mathworks.com/help/comm/examples/raised-cosine-filtering.html#d120e18189
+%Added unity gain
+%Manipulated resulting grpah
+%Added example bitstream for use in direct comparison
+%Started work on carrier modulation
 Nsym = 6;           % Filter span in symbol durations - default
 beta = 0.5;         % Roll-off factor - default 
 sampsPerSym = 6;    % Upsampling factor - aslso helps to smoothen out the graph
