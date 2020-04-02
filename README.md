@@ -1,5 +1,5 @@
 # Senior-Design
-./functions contains pure functions in .m format callable by anyone </br>
+<b>./functions contains pure functions in .m format callable by anyone<b> </br> </br>
 <b>upsampler(bitstream, upsample_factor, (optional) user)</b> </br>
 arg bitstream: array of 0s and 1s with row size = 1 </br>
 arg upsample_factor: the upsample factor = L, creating a 0 padding of L-1 length between bitstream elements </br>
