@@ -7,6 +7,7 @@
 %                  sorted in ascending order
 % output y - quantized vector
 function y=quantalph(x,alphabet)
+    %disp(alphabet);
     alphabet=alphabet(:);
     %disp(alphabet);
     x=x(:);
