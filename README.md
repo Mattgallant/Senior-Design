@@ -3,7 +3,7 @@
 <b>upsampler(bitstream, upsample_factor, (optional) user)</b> </br>
 arg bitstream: array of 0s and 1s with row size = 1 </br>
 arg upsample_factor: the upsample factor = L, creating a 0 padding of L-1 length between bitstream elements </br>
-(optional) arg user: true: use the user-created upsample function, false: use the MATLAB upsample code </br
+(optional) arg user: true: use the user-created upsample function, false: use the MATLAB upsample code </br>
 example usage: upsampled_bitstream = upsampler(1010, 3) </br>
 example output: upsampled bitstream => 100000100000 </br>
 </br>
