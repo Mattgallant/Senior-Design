@@ -1,3 +1,4 @@
+% This is no longer in use! We switched from BPSK to QPSK. See new file.
 % Matt's part of the channel encoding risk reduction experiment. This is not currently done. 
 % Need to figure out how to change coding rate using LTE Toolbox
 % Source: https://www.mathworks.com/help/lte/ref/lteconvolutionaldecode.html
