@@ -5,3 +5,8 @@
 #Ignores MATLAB .m~ files
 *.m~
 
+#Ignore .asv files
+*.asv
+
+.gitignore
+
