@@ -5,8 +5,8 @@ rng default
 M = 16;
 %Sets the bits per symbol
 k = log2(M);
-%Sets Eb/No SNR (db) range
-SNR_db_norm = (4:10)';
+%Sets Eb/No (db) range
+EbNo = (2:10)';
 %Init. LDPC encoder and decoder
 ldpcEncoder = comm.LDPCEncoder;
 ldpcDecoder_soft = comm.LDPCDecoder('DecisionMethod','Soft decision');
@@ -16,18 +16,18 @@ ldpcDecoder_hard = comm.LDPCDecoder('DecisionMethod','Hard decision');
 %Sets symbols per frame
 sym_frame = 8100;
 %Inits. BER vectors
-BER_soft = zeros(size(SNR_db_norm));
-BER_hard = zeros(size(SNR_db_norm));
-BER_unc_hard = zeros(size(SNR_db_norm));
+BER_soft = zeros(size(EbNo));
+BER_hard = zeros(size(EbNo));
+BER_unc_hard = zeros(size(EbNo));
 %Set bitrate
 rate = 1/2;
 snr = 0.25;
-%Main loop iterating through SNR_db values
-for n = 1 : length(SNR_db_norm)
-    %Convert Eb/No SNR_db_norm to SNR 
-    %snr = SNR_db_norm(n) + 10*log10(k*rate);
+%Main loop iterating through snr_range values
+for n = 1 : length(EbNo)
+    %Convert Eb/No EbNo to SNR 
+    snr = EbNo(n) + 10*log10(k*rate);
     %Use simple snr increments
-    snr = snr + 0.25;
+    %snr = snr + 0.25;
     %Calculate noise variance for unit power
     noiseVar = 10.^(-snr/10);
     %Reset error counters for use in a new snr iteration
@@ -73,11 +73,11 @@ for n = 1 : length(SNR_db_norm)
     BER_unc_hard(n) = numErrsUncHard/num_bits;
 end
 %Plot data
-semilogy(SNR_db_norm,[BER_soft BER_hard],'-*')
+semilogy(EbNo,[BER_soft BER_hard],'-*')
 hold on
-semilogy(SNR_db_norm,BER_unc_hard)
+semilogy(EbNo,BER_unc_hard)
 hold on
-semilogy(SNR_db_norm,berawgn(SNR_db_norm,'qam',M))
+semilogy(EbNo,berawgn(EbNo,'qam',M))
 legend('Soft','Hard','Uncoded','Generic Uncoded','location','best')
 grid
 xlabel('Eb/No (dB)')
