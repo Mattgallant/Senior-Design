@@ -6,7 +6,7 @@ M = 16;
 %Sets the bits per symbol
 k = log2(M);
 %Sets Eb/No (db) range
-EbNo = (0:10)';
+EbNo = (0:12)';
 %Init. LDPC encoder and decoder
 ldpcEncoder = comm.LDPCEncoder;
 ldpcDecoder_soft = comm.LDPCDecoder('DecisionMethod','Soft decision');
