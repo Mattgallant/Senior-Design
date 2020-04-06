@@ -43,12 +43,16 @@ for n = 1 : length(EbNo)
         %Modulate unencoded data data_in using 16-QAM
         unc_data_mod = qammod(double(data_in),M,'InputType','bit');
         %scatterplot(unc_data_mod);
+        %Init AWGN Channel block
+        %channel_block = comm.AWGNChannel('EbNo',EbNo(n));
         %Pass modulated data data_mod through AWGN channel
         channel = awgn(data_mod,snr,'measured');
         unc_channel = awgn(unc_data_mod,snr,'measured');
+        %channel = channel_block(data_mod);
+        %unc_channel = channel_block(unc_data_mod);
         %Demodulate the channel using hard-decision
         %Output: bit
-        r_data_hard = qamdemod(channel,M,'OutputType','bit','NoiseVariance',noiseVar);
+        r_data_hard = qamdemod(channel,M,'OutputType','llr','NoiseVariance',noiseVar);
         r_unc_data_hard = qamdemod(unc_channel,M,'OutputType','bit','NoiseVariance',noiseVar);
         %Demodulate the channel using soft-decision
         %Output: log-likelyhood ratio (llr)
@@ -79,7 +83,7 @@ hold on
 semilogy(EbNo,BER_unc_hard)
 hold on
 semilogy(EbNo,berawgn(EbNo,'qam',M))
-legend('Soft','Hard','Uncoded','Generic Uncoded','location','best')
+legend('Soft (Approx. llr)','Harder (llr)','Uncoded','Generic Uncoded','location','best')
 grid
 xlabel('Eb/No (dB)')
 ylabel('Bit Error Rate')
