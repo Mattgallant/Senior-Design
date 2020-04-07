@@ -15,8 +15,7 @@ snr = (2:0.5:4);
 error_rate = zeros(1,length(snr));
 unc_error_rate = zeros(1,length(snr));
 %Generate random data (binary)
-%rng default;
-rng(10,'twister')
+rng default;
 data = randi([0 1], n, 1);
 
 %Init. Turbo encoder and decoder
@@ -50,6 +49,8 @@ for ii = 1 : length(snr)
   
     %Decode demodulated 
     message_decode = turboDec(-demod_encoded, intrlvrInd);
+    
+    errorStats = errorRate(data,message_decode);
     
     %Calculate local and total bit error 
     num_err = biterr(data,double(message_decode));
