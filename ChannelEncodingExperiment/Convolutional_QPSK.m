@@ -3,11 +3,12 @@
 clc, clear all, close all;
 
 %Create vectors that will be used to plot and generate data
-SNR_vector = 0:2:40;                                    %Start:StepSize:End
+SNR_vector = -2:.20:7;                                    %Start:StepSize:End
+%SNR_vector = 2;
 CodedBER = zeros(length(SNR_vector),1);
 BER = zeros(length(SNR_vector),1);
 
-N = 100000;                                             %Size of the bitstream
+N = 1000000;                                             %Size of the bitstream
 
 %Simulate non-coded QPSK
 for snri = 1:length(SNR_vector)
@@ -56,51 +57,72 @@ end
 
 %Simulate convolutionally encoded QPSK
 
-%Initializtion
-qpskMod = comm.QPSKModulator('BitInput',true);
-demodLLR = comm.QPSKDemodulator('BitOutput',true,'DecisionMethod','Log-likelihood ratio');
+% _Simulation parameters_
+M = 4;
+k = log2(M);
 
-chan = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (SNR)');
-
-%Code Properties...
+%%
+% _Code properties_
+codeRate = 1/2;
 constLen = 7;
 codeGenPoly = [171 133];
-tblen = 32;
+tblen = 32;     
 trellis = poly2trellis(constLen,codeGenPoly);
-encoder = comm.ConvolutionalEncoder(trellis);           % Create convolutional encoder
-decSoft = comm.ViterbiDecoder(trellis,'InputFormat','Soft', ...
-    'SoftInputWordLength',3,'TracebackDepth',tblen);
 
-scalQuant = dsp.ScalarQuantizerEncoder('Partitioning','Unbounded');
+%% 
+% Create a rate 1/2, constraint length 7 |<docid:comm_ref#bsnfrdn_3
+% ConvolutionalEncoder>| System object(TM).
+enc = comm.ConvolutionalEncoder(trellis);
 
-errSoft = comm.ErrorRate('ReceiveDelay',tblen);         % BER calculation object
+qpskMod = comm.QPSKModulator('BitInput',true);
+demodLLR = comm.QPSKDemodulator('BitOutput',true,...
+    'DecisionMethod','Log-likelihood ratio');
 
 for snri = 1:length(SNR_vector)
     SNR = SNR_vector(snri);                             % SNR in decibels
-    chan.SNR = SNR;                                     % Set the noise channel SNR
+    EbNo = SNR_vector(snri);                            % SNR = EbNo here... 1/2 code rate and 2 bits per symbol
     
-    txbits = randi([0 1],1,2*N)';                       %Initial input stream
-    encData = encoder(txbits);                          %Encode the data
-    modData = qpskMod(encData);                         %Modulate the data
-    
-    Energy_x = mean(abs(modData).^2);
-    snr = 10^(SNR/10);
-    NoiseVariance = Energy_x/snr;
+    chan = comm.AWGNChannel('NoiseMethod','Signal to noise ratio (Eb/No)', ...
+        'BitsPerSymbol',k);
+    EbNoCoded = EbNo + 10*log10(codeRate);
+    chan.EbNo = EbNoCoded;
+
+    % *Viterbi Decoding*
+    decSoft = comm.ViterbiDecoder(trellis,'InputFormat','Soft', ...
+        'SoftInputWordLength',3,'TracebackDepth',tblen); 
+
+    % *Quantization for soft-decoding*
+    scalQuant = dsp.ScalarQuantizerEncoder('Partitioning','Unbounded');
+    snrdB = EbNoCoded + 10*log10(k);
+    NoiseVariance = 10.^(-snrdB/10);
     demodLLR.Variance = NoiseVariance;
     scalQuant.BoundaryPoints = (-1.5:0.5:1.5)/NoiseVariance;
-    
-%     noise = sqrt(NoiseVariance/2)*(randn(2*N,1) + 1i*randn(2*N,1));
-%     receivedSignal = noise + modData;
-    receivedSignal = chan(modData);                     %Add noise to the signal
-    
-    LLRData = demodLLR(receivedSignal);                 %Demodulate the received signal and output LLR values
-    
+
+    % *Calculating the Error Rate*
+    errSoft = comm.ErrorRate('ReceiveDelay',tblen);
+
+    %% System Simulation
+    txData = randi([0 1],2*N,1);
+    % Convolutionally encode the data.
+    encData = enc(txData); 
+    % Modulate the encoded data.
+    modData = qpskMod(encData);
+    % Pass the modulated signal through an AWGN channel.
+    rxSig = chan(modData);
+    % Demodulate the received signal and output LLR values.
+    LLRData = demodLLR(rxSig);
+    % Pass the demodulated data to the quantizer. This data must be multiplied
+    % by |-1| before being passed to the quantizer, because, in soft-decision
+    % mode, the Viterbi. decoder assumes that positive numbers correspond to 1s
+    % and negative numbers to 0s. Pass the quantizer output to the Viterbi
+    % decoder. Compute the error statistics
     quantizedValue = scalQuant(-LLRData);
     rxDataSoft = decSoft(double(quantizedValue));
-    berSoft = errSoft(txbits,rxDataSoft);
-    
+    berSoft = errSoft(txData,rxDataSoft);
+
     CodedBER(snri) = berSoft(1);
 end
+
 
 %Plot the non-coded of QPSK
 figure(1)
@@ -111,8 +133,8 @@ xlabel('SNR (dB)')
 ylabel('BER')
 
 %Plot the coded version of QPSK
-% figure(2)
-% semilogy(SNR_vector.', CodedBER)
-% title('Coded QPSK')
-% xlabel('SNR (dB)')
-% ylabel('BER')
+figure(2)
+semilogy(SNR_vector.', CodedBER)
+title('Coded QPSK')
+xlabel('SNR (dB)')
+ylabel('BER')
