@@ -1,5 +1,5 @@
 % 16-QAM in Gray Code Adapted from Javi's Example SNR code?
-
+%UNFINISHED
 SNR_vector = 0:2:20;
 BER = zeros(length(SNR_vector),1);
 
