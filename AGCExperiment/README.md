@@ -1,4 +1,4 @@
-# Senior-Design
+# AGC-Functions
 <b>./functions contains pure functions in .m format callable by anyone </b> </br> </br>
 <b>upsampler(bitstream, upsample_factor, (optional) user)</b> </br>
 arg bitstream: array of 0s and 1s with row size = 1 </br>
