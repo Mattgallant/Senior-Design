@@ -86,6 +86,8 @@ gainFactor1 = 10;
 gainFactor2 = 20;
 
 
+
+
 %% SIMULATION %
 %For now, I have just placed comments with the order of functions and what
 %the expected input and output of each function should be. We will plug in
@@ -117,27 +119,68 @@ upsampled4PAMSignal = upsampler(FourPamSignal, L, true);
 upsampled8PAMSignal = upsampler(EightPamSignal, L, true);
 
 
-%% Pulse Shaping (Neel)
-
-
-
-%% Upconvserion to Carrier (Neel)
-
-
-
+%% Pulse Shaping and Upconversion to Carrier Frequency(Neel)
+% Useses SRRC pulse shaping and upconverts the signal to the carrier
+% frequency as a cosine wave.
+% Input: (x,Nsym,beta,sampsPerSym,R,Fc)
+% - x: Input signal to be pulse shaped and translated to carrier freq.
+% - Nsym: Filter span in symbol durations
+% - beta: Rolloff factor
+% - sampsPerSym: Upsampling factor (same as L above)?
+% - R: Data Rate (?)
+% - Fc: Desired carrier frequency
+% Output:
+% - yc: The resulting signal vector
+carrierBPSKSignal = SRRC(upsampledBPSKSignal,Nsym,beta,sampsPerSym,R,9000);
+carrier4PAMSignal = SRRC(upsampled4PAMSignal,Nsym,beta,sampsPerSym,R,9000);
+carrier8PAMSignal = SRRC(upsampled8PAMSignal,Nsym,beta,sampsPerSym,R,9000);
 
 
 %% SIGNAL NOW TRANSMITTED, Channel Attentuation
 % Simply multiplies the gain factor across the entire signal to create the
 % received signals. This will need to be done for multiple different
 % modulations eventually.
-receivedSignal1 = transmittedSignal.*gainFactor1
-receivedSignal2 = transmittedSignal.*gainFactor2
+receivedSignalBPSK1 = carrierBPSKSignal.*gainFactor1;
+receivedSignal4PAM1 = carrier4PAMSignal.*gainFactor1;
+receivedSignal8PAM1 = carrier8PAMSignal.*gainFactor1;
+
+receivedSignalBPSK2 = carrierBPSKSignal.*gainFactor2;
+receivedSignal4PAM2 = carrier4PAMSignal.*gainFactor2;
+receivedSignal8PAM2 = carrier8PAMSignal.*gainFactor2;
 
 %% Automatic Gain Control (Phat and Joseph)
+% Estimates the value of the gain factor that occurred in the channel and
+% corrects the input signal to correct amplitude level.
 
+% Gradient Descent Algorithim
+% Input: (r)
+% - r: The signal to be equalized
+% Output: [output, amplitudeOverIterations]
+% - output: The amplitude equalized signal
+% - amplitudeOverIterations: A vector of the amplitude estimations (TODO)
+gradSignalBPSK1 = AGCgrad(receivedSignalBPSK1);
+gradSignal4PAM1 = AGCgrad(receivedSignal4PAM1);
+gradSignal8PAM1 = AGCgrad(receivedSignal8PAM1);
+
+gradSignalBPSK2 = AGCgrad(receivedSignalBPSK2);
+gradSignal4PAM2 = AGCgrad(receivedSignal4PAM2);
+gradSignal8PAM2 = AGCgrad(receivedSignal8PAM2);
+
+% LMS Algorithim
+% Input: (r)
+% - r: The signal to be equalized
+% Output: [output, amplitudeOverIterations]  TODO
+% - output: The amplitude equalized signal
+% - amplitudeOverIterations: A vector of the amplitude estimations (TODO)
+LMSSignalBPSK1 = AGC_LMS(receivedSignalBPSK1);
+LMSSignal4PAM1 = AGC_LMS(receivedSignal4PAM1);
+LMSSignal8PAM1 = AGC_LMS(receivedSignal8PAM1);
+
+LMSSignalBPSK2 = AGC_LMS(receivedSignalBPSK2);
+LMSSignal4PAM2 = AGC_LMS(receivedSignal4PAM2);
+LMSSignal8PAM2 = AGC_LMS(receivedSignal8PAM2);
 
 %% Training Sequence Detection (Austin and Carolyn)
-
+% TODO
 
 
