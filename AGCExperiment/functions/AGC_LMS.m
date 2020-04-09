@@ -1,8 +1,9 @@
 %-----AGC_LMS------
 %Stabilizes the amplitude of a received signal
 %Inputs: r - the signal to be equalized
-%Outputs: output - the signal after amplitude equalization
-function output = AGC_LMS(r)
+%Outputs:   signal - the signal after amplitude equalization
+%           estimation - gain factor estimation
+function [signal, estimation] = AGC_LMS(r)
     n=length(r);                           % number of steps in simulation
     ds=1;                           % desired power of output
 %     env=0.75+abs(sin(2*pi*[1:n]'/n));  % the fading profile
@@ -22,7 +23,8 @@ function output = AGC_LMS(r)
         DivideByFactor = DivideByFactor +mu*err(k);
     end
     
-    output = y; %y is 
+    signal = y; %y is output signal
+    estimation = DivideByFactor_time;   
 
 %     % % % draw agcgrad.eps
 %     subplot(3,1,1)
