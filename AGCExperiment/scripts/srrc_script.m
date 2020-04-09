@@ -19,9 +19,9 @@ Fc = 1000;               %Carrier frequency, 1kHz
 x = [1; -1; 1; 1; -1; -1; -1; 1];
 
 %(optional) print bitstream and size array-dimensions of bitstream
-fprintf("%d ",bitstream);
-fprintf("\n");
-fprintf("%d, ",size(bitstream));
+%fprintf("%d ",bitstream);
+%fprintf("\n");
+%fprintf("%d, ",size(bitstream));
 
 % Time vector sampled at symbol rate in milliseconds
 tx = 1000 * (0: DataL - 1) / R;
