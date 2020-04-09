@@ -1,6 +1,6 @@
 <b><h2> Channel Encoding Risk Reduction Experiment </h2></b>
 
-<b> Description </b>
+<b> Description </b> <br>
 For the first team risk reduction, we would like to test different implementations of channel encoding. 
 We plan to split into three different subteams. Austin and Matt will be implementing convolutional encoding, 
 and Carolyn will implement turbo coding, and Jaino, Phat and Neel will implement LDPC. Each team will 
@@ -13,12 +13,12 @@ well as the different code rates. Based on this experiment, we will select a cod
 evelopment of our transmitter.
 
 <b>Subteams</b>
-Convolutional - Matt, Austin
+Convolutional: Matt, Austin
 - QPSK -> Matt 
-Turbo - Joseph, Carolyn
+Turbo: Joseph, Carolyn
  - QPSK
  - 16QAM
-LDPC -  Jaino, Phat, Neel
+LDPC:  Jaino, Phat, Neel
  - QPSK - Jaino
  - 16QAM - Neel
  - 64QAM - Phat
