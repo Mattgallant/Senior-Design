@@ -79,15 +79,17 @@ EbNo = (0:12)';
 %SNR Input Type: 'SNR_vector' || 'EbNo'
 %   'SNR_vector': uses a defined set of SNR values in db
 %   'EbNo': uses a defines set of EbNo values in db
-SNR_input_type = SNR_vector;
+SNR_input = SNR_vector;
 
 %% USER DEFINED ATTENTUATION PARAMETERS
-gainFactor1 = 10;
-gainFactor2 = 20;
+gainFactor = 10;
+
+%% USER DEFINED AGC PARAMETERS
+%AGC Algo: 'grad' || 'lms'
+AGC_algo = 'grad';
 
 
-
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SIMULATION %
 %For now, I have just placed comments with the order of functions and what
 %the expected input and output of each function should be. We will plug in
@@ -104,6 +106,17 @@ gainFactor2 = 20;
 % - FourPamSignal: vector of 4PAM modulated bits
 % - EightPamSignal: vector of 8PAM modulated bits
 [sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal] = input_modulation(read_length);
+switch modulation_type
+    case 'BPSK'
+        modulatedSignal = BPSKSignal;
+    case '4PAM'
+        modulatedSignal = FourPamSignal;
+    case '8PAM'
+        modulatedSignal = EightPamSignal;
+    otherwise
+        modulatedSignal = BPSKSignal;
+end
+
 
 %% Upsampling (Neel)
 % Upsamples the input signal
@@ -114,9 +127,7 @@ gainFactor2 = 20;
 % Output: user_upsampled_bitstream
 % - user_upsampled_bitsream: new vector of upsampled signal
 L = 3;
-upsampledBPSKSignal = upsampler(BPSKSignal, L, true);
-upsampled4PAMSignal = upsampler(FourPamSignal, L, true);
-upsampled8PAMSignal = upsampler(EightPamSignal, L, true);
+upsampledSignal = upsampler(modulatedSignal', L, true);
 
 
 %% Pulse Shaping and Upconversion to Carrier Frequency(Neel)
@@ -131,56 +142,72 @@ upsampled8PAMSignal = upsampler(EightPamSignal, L, true);
 % - Fc: Desired carrier frequency
 % Output:
 % - yc: The resulting signal vector
-carrierBPSKSignal = SRRC(upsampledBPSKSignal,Nsym,beta,sampsPerSym,R,9000);
-carrier4PAMSignal = SRRC(upsampled4PAMSignal,Nsym,beta,sampsPerSym,R,9000);
-carrier8PAMSignal = SRRC(upsampled8PAMSignal,Nsym,beta,sampsPerSym,R,9000);
+carrierSignal = SRRC(upsampledSignal,Nsym,beta,sampsPerSym,R,9000);
 
 
 %% SIGNAL NOW TRANSMITTED, Channel Attentuation
 % Simply multiplies the gain factor across the entire signal to create the
 % received signals. This will need to be done for multiple different
 % modulations eventually.
-receivedSignalBPSK1 = carrierBPSKSignal.*gainFactor1;
-receivedSignal4PAM1 = carrier4PAMSignal.*gainFactor1;
-receivedSignal8PAM1 = carrier8PAMSignal.*gainFactor1;
+gainSignal = carrierSignal.*gainFactor;
 
-receivedSignalBPSK2 = carrierBPSKSignal.*gainFactor2;
-receivedSignal4PAM2 = carrier4PAMSignal.*gainFactor2;
-receivedSignal8PAM2 = carrier8PAMSignal.*gainFactor2;
+%TODO: Add AWGN based on the SNR and Attenuation Factor!
+receivedSignal = gainSignal; % + noise
 
 %% Automatic Gain Control (Phat and Joseph)
 % Estimates the value of the gain factor that occurred in the channel and
 % corrects the input signal to correct amplitude level.
+switch AGC_algo
+    case 'grad'
+        % Gradient Descent Algorithim
+        % Input: (r)
+        % - r: The signal to be equalized
+        % Output: [output, amplitudeOverIterations]
+        % - output: The amplitude equalized signal
+        % - amplitudeOverIterations: A vector of the amplitude estimations (TODO)
+        [gainControlledSignal, gainEstimation] = AGCgrad(receivedSignal);
+    case 'lms'
+        % LMS Algorithim
+        % Input: (r)
+        % - r: The signal to be equalized
+        % Output: [output, estimations]  TODO
+        % - output: The amplitude equalized signal
+        % - estimations: A vector of the amplitude estimations (TODO)
+        [gainControlledSignal, gainEstimation] = AGC_LMS(receivedSignal);
+    otherwise
+        [gainControlledSignal, gainEstimation] = AGCgrad(receivedSignal);
+end
 
-% Gradient Descent Algorithim
-% Input: (r)
-% - r: The signal to be equalized
-% Output: [output, amplitudeOverIterations]
-% - output: The amplitude equalized signal
-% - amplitudeOverIterations: A vector of the amplitude estimations (TODO)
-gradSignalBPSK1 = AGCgrad(receivedSignalBPSK1);
-gradSignal4PAM1 = AGCgrad(receivedSignal4PAM1);
-gradSignal8PAM1 = AGCgrad(receivedSignal8PAM1);
-
-gradSignalBPSK2 = AGCgrad(receivedSignalBPSK2);
-gradSignal4PAM2 = AGCgrad(receivedSignal4PAM2);
-gradSignal8PAM2 = AGCgrad(receivedSignal8PAM2);
-
-% LMS Algorithim
-% Input: (r)
-% - r: The signal to be equalized
-% Output: [output, amplitudeOverIterations]  TODO
-% - output: The amplitude equalized signal
-% - amplitudeOverIterations: A vector of the amplitude estimations (TODO)
-LMSSignalBPSK1 = AGC_LMS(receivedSignalBPSK1);
-LMSSignal4PAM1 = AGC_LMS(receivedSignal4PAM1);
-LMSSignal8PAM1 = AGC_LMS(receivedSignal8PAM1);
-
-LMSSignalBPSK2 = AGC_LMS(receivedSignalBPSK2);
-LMSSignal4PAM2 = AGC_LMS(receivedSignal4PAM2);
-LMSSignal8PAM2 = AGC_LMS(receivedSignal8PAM2);
 
 %% Training Sequence Detection (Austin and Carolyn)
 % TODO
+
+
+
+
+%% Plots (Matt)
+% TODO
+
+
+
+% Plot the Gain Estimate vs Iteration
+iterations = linspace(0, length(gainEstimation), length(gainEstimation));
+
+figure(1)
+semilogy(iterations,gainEstimation);
+title('Coded vs. Non-coded QPSK')
+xlabel('Iteration')
+ylabel('Gain Factor Estimate')
+%axis([-2 10 10e-5 1])
+
+% Plot the BER vs SNR
+figure(2)
+semilogy(SNR_input.', BER)
+title("BER vs SNR for " + modulation_type + " modulated signal using " + agc_algo + " AGC");
+xlabel('SNR (dB)')
+ylabel('BER')
+%axis([-2 10 10e-5 1])
+
+
 
 
