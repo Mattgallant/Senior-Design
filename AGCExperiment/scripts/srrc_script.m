@@ -9,15 +9,17 @@ beta = 0.5;         % Roll-off factor - default
 sampsPerSym = 6;    % Upsampling factor - aslso helps to smoothen out the graph
 
 % Parameters
-DataL = 10000;             % Data length in symbols
-R = 500;               % Data rate
-Fs = R * sampsPerSym;   % Sampling frequency
-Fc = 1000;               %Carrier frequency, 1kHz
+DataL = 5000;             % Data length in symbols
+R = 500;               % Data rate (symbols per second)
+Fs = R * sampsPerSym;   % Sampling frequency, set to 500*6 = 3000, samples = cycles
+Fc = 300;               %Carrier frequency, 300Hz
+
+%NMW Getting 3x the difference Fc seems to not matter? HAS TO DO WITH Fs
+%and to
 
 %Example Bitstream mapped with BPSK
-%Note: must be a column vector e.g. (1,elements)
 x =  2*randi([0 1],DataL,1) - 1;
-
+x_up = upsample(x,sampsPerSym);
 %(optional) print bitstream and size array-dimensions of bitstream
 %fprintf("%d ",bitstream);
 %fprintf("\n");
@@ -38,7 +40,7 @@ rctFilt3 = comm.RaisedCosineTransmitFilter(...
   'FilterSpanInSymbols',    Nsym, ...
   'OutputSamplesPerSymbol', sampsPerSym);
 
-fvtool(rctFilt3)
+%fvtool(rctFilt3)
 
 %set unity passband gain and verify it's 1
 b = coeffs(rctFilt3);
@@ -50,28 +52,30 @@ sum(bNorm.Numerator)
 yc = rctFilt3([x; zeros(Nsym/2,1)]);
 % Correct for propagation delay by removing filter transients
 yc = yc(fltDelay*Fs+1:end);
+%Convolution, Thanks Javi :)
+yc_conv = conv(x_up,yc);
 %message, phase modulation of filtered signal
-phasedev = pi/2;
-message = yc*cos(2*pi*tx*Fc);
-%message = pmmod(signal,Fc,Fs,phasedev);
+tc = 1000 * (0:DataL*sampsPerSym-1) / Fc; %The time vector for the specified frequency
+message = yc_conv*cos(2*pi*to*Fc); %The filtered message y values
 
-figure(1)
-spectrumAnalyzer = dsp.SpectrumAnalyzer('SampleRate',1000);
-spectrumAnalyzer(yc)
+
+%figure(1)
+%spectrumAnalyzer = dsp.SpectrumAnalyzer('SampleRate',1000);
+%spectrumAnalyzer(yc)
 
 figure(2)
 % Plot data.
 stem(tx(1:100), x(1:100), 'kx'); hold on;
 % Plot filtered data.
-plot(to, yc, 'm-'); hold off;
+plot(to(1:500), yc(1:500), 'm-'); hold off;
 % Set axes and labels.
-axis([-1 200 -1.7 1.7]);  xlabel('Time (ms)'); ylabel('Amplitude');
+axis([-1 100 -1.7 1.7]);  xlabel('Time (ms)'); ylabel('Amplitude');
 legend('Mapped-Bitstream', 'Sqrt. Raised Cosine', 'Location', 'southeast');
 
 
-%figure(3)
+figure(3)
 %modulate on cosine carrier of 1kHz
-%plot(message); hold off;
-%axis([-1 DataL*8 -1.7 1.7]); xlabel('Time (ms)'); ylabel('Amplitude');
-%legend('Modulated SRRC Data','Location','southeast');
+plot(message(1:500),'m-'); hold off;
+axis([-1 100 -1.7 1.7]); xlabel('Time (ms)'); ylabel('Amplitude');
+legend('Modulated SRRC Data','Location','southeast');
 
