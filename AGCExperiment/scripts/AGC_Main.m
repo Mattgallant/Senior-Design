@@ -162,7 +162,7 @@ end
 % Output: user_upsampled_bitstream
 % - user_upsampled_bitsream: new vector of upsampled signal
 L = 3;
-upsampledSignal = upsampler(modulatedSignal', L, true);
+%upsampledSignal = upsampler(modulatedSignal', L, true);
 
 
 %% Pulse Shaping and Upconversion to Carrier Frequency(Neel)
@@ -177,7 +177,12 @@ upsampledSignal = upsampler(modulatedSignal', L, true);
 % - Fc: Desired carrier frequency
 % Output:
 % - yc: The resulting signal vector
-carrierSignal = SRRC(upsampledSignal,Nsym,beta,L,R,9000);
+Nsym = 6;
+beta = 1;
+sampsPerSym = 6;
+R = 500;
+Fc = 9000;
+[transmissionTimes, carrierSignal] = SRRC(modulatedSignal,Nsym,beta,L,R,Fc);
 
 
 %% SIGNAL NOW TRANSMITTED, Channel Attentuation
