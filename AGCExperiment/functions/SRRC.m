@@ -1,6 +1,9 @@
 function [t,yc] = SRRC(b_data,nysm,beta,samplesPerSymbol,dataRate,Fc)
 %Design SRRC filter, (optinal) visualize impulse response
 srrc = rcosdesign(beta,nysm,samplesPerSymbol,'sqrt');
+%Normalize filter
+srrc = srrc * 1/max(srrc);
+%Calculate filter delay
 filter_delay = nysm / (2*dataRate);
 %fvtool(srrc,'Analysis','impulse')
 
