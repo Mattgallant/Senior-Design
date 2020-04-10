@@ -3,6 +3,7 @@
 %Jaino Vennatt
 function [sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal] = input_modulation(numberOfBits)
     %Open source file
+    numberOfBits=300;
     filePointer= fopen('alice_in_wonderland.txt');
     %Read in characters of book
     fileValues= fscanf(filePointer,'%c');
@@ -88,7 +89,32 @@ function [sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal] = input_modu
             EightPamSignal(indexValue)=7;
         end
     end
+    
+    
+    %Normalize BPSK
+    BPSKNormalizingFactor=sqrt(1);
+    for n=1:length(BPSKSignal)
+        currentvalue=BPSKSignal(n);
+        BPSKSignal(n) = currentvalue / BPSKNormalizingFactor;
+    end
+    
+    %Normalize 4PAM
+    FourPamNormalizingFactor= sqrt(5);
+    for n=1:length(FourPamSignal)
+        currentvalue=FourPamSignal(n);
+        FourPamSignal(n) = currentvalue / FourPamNormalizingFactor;
+    end
+    
+    %Normalize 8PAM
+    EightPamNormalizingFactor= sqrt(21);
+    for n=1:length(EightPamSignal)
+        currentvalue=EightPamSignal(n);
+        EightPamSignal(n) = currentvalue / EightPamNormalizingFactor;
+    end
+    
     %disp(EightPamSignal);
+    
+    
 
 
 
