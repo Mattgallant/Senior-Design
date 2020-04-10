@@ -20,7 +20,7 @@ BER_soft = zeros(size(EbNo));
 BER_hard = zeros(size(EbNo));
 BER_unc_hard = zeros(size(EbNo));
 %Set bitrate
-rate = 1;
+rate = 1/2;
 %Main loop iterating through snr_range values
 for n = 1 : length(EbNo)
     %Convert Eb/No EbNo to SNR 
@@ -29,16 +29,23 @@ for n = 1 : length(EbNo)
     [numErrsSoft,numErrsHard,numErrsUncHard,num_bits] = deal(0);
     fprintf("%d\n",EbNo(n));
     %Loop until a bit threshold per snr value is reached
-    while num_bits < 1e5
+    while num_bits < 1e8
         % Generate binary data and convert to symbols
         data_in = randi([0 1],sym_frame*k,1); 
         %LDPC encode the data_in
         %data_enc = double(ldpcEncoder(data_in));
         data_enc = step(ldpcEncoder,data_in);
-        %Use Javi's SNR Equation
-        snr = EbNo(n)*(sym_frame*k)/(length(data_enc))*log2(M);
+        
+        
+        %SNR
+        snr = 10^(EbNo(n)/10)*rate*log2(M);
+        %SNR = EbNo(k) * rate * log2(M);
+        %snr = SNR * rate * log2(M);
+        %snr = 10.^(SNR/10);
+        
+        
         %Calculate noise variance for unit power
-        noiseVar = 1/(10.^(snr/10)); %1/(10.^(snr/10))
+        noiseVar = 1/snr; %1/(10.^(snr/10))
         %Modulate encoded data data_enc using 16-QAM (default: gray coding)
         data_mod = qammod(data_enc,M,'InputType','bit','UnitAveragePower',true);
         %Modulate unencoded data data_in using 16-QAM
