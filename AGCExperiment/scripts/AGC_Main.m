@@ -91,6 +91,7 @@ AGC_algo = 'grad';
 %% USER DEFINED TRAINING SEQUENCE PARAMETERS
 %Training Algo: 'golay' || 'pn'
 training_algo = 'golay';
+loc = 50;
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -116,11 +117,7 @@ sourceSignal = Input(read_length);
 % - 
 switch training_algo
     case 'golay'
-        % Input: TODO
-        % - 
-        % Output: TODO
-        % - 
-       sourceWithTrainingSignal =  %GOLAY FUNCTION
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sourceSignal, loc);
     case 'pn'
         % Input: TODO
         % - 
@@ -225,7 +222,7 @@ switch training_algo
         % - 
         % Output: TODO
         % - 
-       sourceWithTrainingSignal =  %GOLAY FUNCTION TODO
+       sourceWithTrainingSignal =  golay_sequence_detection(training_sequence, gainControlledSignal);
     case 'pn'
         % Input: TODO
         % - 
