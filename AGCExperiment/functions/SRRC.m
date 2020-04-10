@@ -11,6 +11,6 @@ y = upfirdn(b_data,srrc,samplesPerSymbol);
 yc = y(filter_delay*Fs + 1:end);
 
 %Upconversion - NOT WORKING
-yc = yc.*cos(2*pi*t.*Fc);
+%yc = yc.*cos(2*pi*t.*Fc);
 
 end
