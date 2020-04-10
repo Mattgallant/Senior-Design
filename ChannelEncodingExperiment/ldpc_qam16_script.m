@@ -6,7 +6,7 @@ M = 16;
 %Sets the bits per symbol
 k = log2(M);
 %Sets Eb/No (db) range
-EbNo = (-2:1:10)';
+EbNo = (-2:0.2:10)';
 %Init. LDPC encoder and decoder
 ldpcEncoder = comm.LDPCEncoder;
 ldpcDecoder_soft = comm.LDPCDecoder('DecisionMethod','Soft decision');
@@ -26,10 +26,10 @@ for n = 1 : length(EbNo)
     %Convert Eb/No EbNo to SNR 
     %snr = EbNo(n) + 10*log10(k*rate);
     %Reset error counters for use in a new snr iteration
-    [numErrsSoft,numErrsHard,numErrsUncHard,num_bits] = deal(0);
+    [numErrsSoft,numErrsHard,numErrsUncHard,num_bits,frames] = deal(0);
     fprintf("%d\n",EbNo(n));
     %Loop until a bit threshold per snr value is reached
-    while num_bits < 1e8
+    while frames < 300
         % Generate binary data and convert to symbols
         data_in = randi([0 1],sym_frame*k,1); 
         %LDPC encode the data_in
@@ -39,7 +39,7 @@ for n = 1 : length(EbNo)
         
         %SNR
         snr = 10^(EbNo(n)/10)*rate*log2(M);
-        %SNR = EbNo(k) * rate * log2(M);
+        SNR = EbNo(k) * rate * log2(M);
         %snr = SNR * rate * log2(M);
         %snr = 10.^(SNR/10);
         
@@ -79,6 +79,7 @@ for n = 1 : length(EbNo)
         numErrsSoft = numErrsSoft + num_err_soft;
         numErrsUncHard = numErrsUncHard + num_err_unc_hard;
         num_bits = num_bits + sym_frame*k; 
+        frames = frames + 1;
     end
     %Estimate BER for hard and soft decision making
     BER_soft(n) = numErrsSoft/num_bits;
