@@ -58,8 +58,6 @@ for n = 1 : length(EbNo)
         unc_channel = awgn(unc_data_mod,snr_unc,'measured');
     
         %Demodulate the channel 
-        %enc_demod = qamdemod(channel,M,'OutputType','llr','NoiseVariance',noiseVar_enc);
-        %unc_demod = qamdemod(unc_channel,M,'OutputType','bit','NoiseVariance',noiseVar_unc);
         enc_demod = qamdemod(channel,M,'OutputType','llr','NoiseVariance',noiseVar_enc);
         unc_demod = qamdemod(unc_channel,M,'OutputType','bit','NoiseVariance',noiseVar_unc);
   
