@@ -88,6 +88,10 @@ gainFactor = 10;
 %AGC Algo: 'grad' || 'lms'
 AGC_algo = 'grad';
 
+%% USER DEFINED TRAINING SEQUENCE PARAMETERS
+%Training Algo: 'golay' || 'pn'
+training_algo = 'golay';
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SIMULATION %
@@ -95,17 +99,47 @@ AGC_algo = 'grad';
 %the expected input and output of each function should be. We will plug in
 %the actual functions later
 
-%% Bitstream Generation and Modulation (Jaino)
-% Generates a bitstream from a file and modulates it using 3 different
-% modulation schemes.
+%% Bitstream Generation (Jaino)
+% Generates a bitstream from a file.
 % Input: (numberOfBits) --> use read_length parameter
 % - numberOfBits (must be a multiple of both 2 and 3)
-% Output: [sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal]
-% - sourceCharacters: vector of originally generated bits
-% - BPSKSignal: vector of BPSK modulated bits
-% - FourPamSignal: vector of 4PAM modulated bits
-% - EightPamSignal: vector of 8PAM modulated bits
-[sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal] = input_modulation(read_length);
+% Output: [sourceCharacters, sendableBits]
+% - soruceCharacters: 2D Matrix of ASCII values
+% - sendableBits: The resulting bitstream
+sourceSignal = Input(read_length);
+
+%% Training Sequence Injection (Austin, Carolyn)
+% Adds the training sequence to the bit stream
+% Input: TODO
+% - 
+% Output: TODO
+% - 
+switch training_algo
+    case 'golay'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %GOLAY FUNCTION
+    case 'pn'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %PN FUNCTION
+    otherwise
+       sourceWithTrainingSignal =  %DEFAULT FUNCTION, Just choose one algo
+end
+
+%% Signal Modulation (Jaino)
+% Modulates the input signal using a given modulation scheme. takes
+% sourceWithTrainingSignal and modulates
+% [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
+% Input: TODO
+% - sendableBits: Vector of bits to be modulated
+% Output:
+% - 
+[BPSKSignal,FourPamSignal, EightPamSignal] = Modulation(sourceWithTrainingSignal);
 switch modulation_type
     case 'BPSK'
         modulatedSignal = BPSKSignal;
@@ -113,11 +147,11 @@ switch modulation_type
         modulatedSignal = FourPamSignal;
     case '8PAM'
         modulatedSignal = EightPamSignal;
-    otherwise
+    otherwise 
         modulatedSignal = BPSKSignal;
 end
-
-
+       
+   
 %% Upsampling (Neel)
 % Upsamples the input signal
 % Input: (bitstream,upsample_factor,user)
@@ -135,14 +169,14 @@ upsampledSignal = upsampler(modulatedSignal', L, true);
 % frequency as a cosine wave.
 % Input: (x,Nsym,beta,sampsPerSym,R,Fc)
 % - x: Input signal to be pulse shaped and translated to carrier freq.
-% - Nsym: Filter span in symbol durations
-% - beta: Rolloff factor
+% - Nsym: Filter span in symbol durations (?)
+% - beta: Rolloff factor (?)
 % - sampsPerSym: Upsampling factor (same as L above)?
 % - R: Data Rate (?)
 % - Fc: Desired carrier frequency
 % Output:
 % - yc: The resulting signal vector
-carrierSignal = SRRC(upsampledSignal,Nsym,beta,sampsPerSym,R,9000);
+carrierSignal = SRRC(upsampledSignal,Nsym,beta,L,R,9000);
 
 
 %% SIGNAL NOW TRANSMITTED, Channel Attentuation
@@ -180,7 +214,27 @@ end
 
 
 %% Training Sequence Detection (Austin and Carolyn)
-% TODO
+% Detects the training sequence.... (?)
+% Input: TODO
+% - 
+% Output: TODO
+% - 
+switch training_algo
+    case 'golay'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %GOLAY FUNCTION TODO
+    case 'pn'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %PN FUNCTION
+    otherwise
+       sourceWithTrainingSignal =  %DEFAULT FUNCTION, Just choose one algo
+end
 
 
 
@@ -194,7 +248,7 @@ end
 iterations = linspace(0, length(gainEstimation), length(gainEstimation));
 
 figure(1)
-semilogy(iterations,gainEstimation);
+semilogy(iterations, gainEstimation);
 title('Coded vs. Non-coded QPSK')
 xlabel('Iteration')
 ylabel('Gain Factor Estimate')

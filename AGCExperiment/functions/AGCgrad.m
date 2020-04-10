@@ -1,15 +1,22 @@
-function output = AGCgrad(r)
-    %AGCGRAD Summary of this function goes here
-    %   Detailed explanation goes here
-    n=length(r);                           % number of steps in simulation
-    ds=1;                           % desired power of output
-    mu=0.001;                          % algorithm stepsize
-    a=zeros(n,1); a(1)=1;              % initialize AGC parameter
-    s=zeros(n,1);                      % initialize outputs             
+function [signal, estimation] = AGCgrad(r)
+    % AGCGRAD : 
+    %   inputs- 
+    %       r is the recieved signal that has been attenuated, 
+    %   outputs- 
+    %       signal is the estimated signal with attenuation removed
+    %       estimation is an array containing estimated attenuation
+    %       at each step in the gradient descent method
+    %
+    n=length(r);                            % number of steps in sim is equal to length of signal
+    ds=1;                                   % desired power of the algorithm, Javi says to keep it at 1, may be a parameter
+    mu=0.01;                                % gradient descent learning rate
+    a=zeros(n,1); a(1)=1;                   % initialize AGC vector and initial guess
+    s=zeros(n,1);                           % estimation of original            
     for k=1:n-1
-        s(k)=a(k)*r(k);                       % normalize by a to get s
-        a(k+1)=a(k)-mu*sign((s(k)^2)-(ds^2));       % average adaptive update of a(k)
+        s(k)=a(k)*r(k);                             % normalize by a to get s
+        a(k+1)=a(k)-mu*sign((s(k)^2)-(ds^2));       % update a(k+1)
     end
-    output = o;
+    signal = s;         % estimation of original signal
+    estimation = a;     % estimation of attenuation factor over time
 end
 
