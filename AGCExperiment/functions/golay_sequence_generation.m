@@ -11,5 +11,4 @@ function[data_in, training_sequence]= golay_sequence_generation(sendableBits, lo
             training_sequence(bit) = 0;
         end
     end
-    data_in = [sendableBits(1:loc) training_sequence sendableBits(loc+1:end)];
-    
+    data_in = [sendableBits(1:loc) num2str(training_sequence) sendableBits(loc+1:end)];

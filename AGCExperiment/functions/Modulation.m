@@ -6,8 +6,8 @@ function [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
     fourPamModValue = mod((length(sendableBits)),2);
     eightPamModValue = mod((length(sendableBits)),3);
     BPSKSignal= zeros(1, length(sendableBits));
-    FourPamSignal=zeros(1, ((fix(length(sendableBits))/2)+fourPamModValue));
-    EightPamSignal=zeros(1, ((fix(length(sendableBits))/3)+eightPamModValue));
+    FourPamSignal=zeros(1, ((fix(length(sendableBits)/2))+fourPamModValue));
+    EightPamSignal=zeros(1, ((fix(length(sendableBits)/3))+eightPamModValue));
 
     %Code To assign Values for BPSK
     for n=1:length(sendableBits)
