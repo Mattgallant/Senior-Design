@@ -1,4 +1,4 @@
-function yc = SRRC(b_data,nysm,beta,samplesPerSymbol,dataRate,Fc)
+function [t,yc] = SRRC(b_data,nysm,beta,samplesPerSymbol,dataRate,Fc)
 %Design SRRC filter, (optinal) visualize impulse response
 srrc = rcosdesign(beta,nysm,samplesPerSymbol,'sqrt');
 filter_delay = nysm / (2*dataRate);
@@ -10,7 +10,9 @@ y = upfirdn(b_data,srrc,samplesPerSymbol);
 %Correct for propagation delay
 yc = y(filter_delay*Fs + 1:end);
 
-%Upconversion - NOT WORKING
+t = 1000 * (0:length(b_data)*samplesPerSymbol-1) / Fc;
+
+%2D transmit signal - NOT WORKING
 %yc = yc.*cos(2*pi*t.*Fc);
 
 end
