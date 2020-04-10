@@ -88,6 +88,10 @@ gainFactor = 10;
 %AGC Algo: 'grad' || 'lms'
 AGC_algo = 'grad';
 
+%% USER DEFINED TRAINING SEQUENCE PARAMETERS
+%Training Algo: 'golay' || 'pn'
+training_algo = 'golay';
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% SIMULATION %
@@ -117,6 +121,13 @@ switch modulation_type
         modulatedSignal = BPSKSignal;
 end
 
+%% Training Sequence Injection (Austin, Carolyn)
+% Adds the training sequence to the bit stream
+switch training_algo
+    case 'golay'
+       modulatedWithTrainingSignal =  
+    case 'pn'
+       modulatedWithTrainingSignal = 
 
 %% Upsampling (Neel)
 % Upsamples the input signal
@@ -135,14 +146,14 @@ upsampledSignal = upsampler(modulatedSignal', L, true);
 % frequency as a cosine wave.
 % Input: (x,Nsym,beta,sampsPerSym,R,Fc)
 % - x: Input signal to be pulse shaped and translated to carrier freq.
-% - Nsym: Filter span in symbol durations
-% - beta: Rolloff factor
+% - Nsym: Filter span in symbol durations (?)
+% - beta: Rolloff factor (?)
 % - sampsPerSym: Upsampling factor (same as L above)?
 % - R: Data Rate (?)
 % - Fc: Desired carrier frequency
 % Output:
 % - yc: The resulting signal vector
-carrierSignal = SRRC(upsampledSignal,Nsym,beta,sampsPerSym,R,9000);
+carrierSignal = SRRC(upsampledSignal,Nsym,beta,L,R,9000);
 
 
 %% SIGNAL NOW TRANSMITTED, Channel Attentuation
@@ -194,7 +205,7 @@ end
 iterations = linspace(0, length(gainEstimation), length(gainEstimation));
 
 figure(1)
-semilogy(iterations,gainEstimation);
+semilogy(iterations, gainEstimation);
 title('Coded vs. Non-coded QPSK')
 xlabel('Iteration')
 ylabel('Gain Factor Estimate')
