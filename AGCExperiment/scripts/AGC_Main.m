@@ -119,6 +119,12 @@ sourceSignal = Input(read_length);
     % - training_sequence: Corresponding training sequence (golay or pn)
 switch training_algo
     case 'golay'
+        % Input: (sourceSignal,loc)
+        % - sourceSignal: Input stream signal
+        % - loc: location index of where training sequence is embedded
+        % Output: (sourceWithTrainingSignal, training_sequence)
+        % - sourceWithTrainingSignal: bitsream with embedded sequence
+        % - training_sequence: Pseudonoise training_sequence
        [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sourceSignal, loc);
     case 'pn'
         % Input: (sourceSignal,loc)
@@ -227,11 +233,11 @@ end
 % Output: void
 switch training_algo
     case 'golay'
-        % Input: TODO
-        % - 
-        % Output: TODO
-        % - 
-       golay_sequence_detection(training_sequence, gainControlledSignal);
+        % Input: (training_sequence, gainControlledSignal)
+        % - gainControlledSignal: amplitude equalized signal
+        % - trainging_sequence: Generated golay sequence
+        % Output: void
+       golay_sequence_detection(gainControlledSignal, training_sequence);
     case 'pn'
         % Input: (gainControlledSignal, training_sequence)
         % - gainControlledSignal: amplitude equalized signal
