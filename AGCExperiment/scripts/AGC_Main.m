@@ -107,35 +107,35 @@ loc = 50;
 % Output: [sourceCharacters, sendableBits]
 % - soruceCharacters: 2D Matrix of ASCII values
 % - sendableBits: The resulting bitstream
-sourceSignal = Input(read_length);
+[sourceCharacters, sendableBits] = Input(read_length);
 
 %% Training Sequence Injection (Austin, Carolyn)
 % Embeds the training sequence to the bit stream
-% Input: (sourceSignal, loc)
-    % - sourceSignal: Input stream signal
+% Input: (sendableBits, loc)
+    % - sendableBits: Input stream signal
     % - loc: location index of where training sequence is embedded
 % Output: (sourceWithTrainingSignal, training_sequence)
     % - sourceWithTrainingSignal: bitsream with embedded sequence
     % - training_sequence: Corresponding training sequence (golay or pn)
 switch training_algo
     case 'golay'
-        % Input: (sourceSignal,loc)
-        % - sourceSignal: Input stream signal
+        % Input: (sendableBits,loc)
+        % - sendableBits: Input stream signal
         % - loc: location index of where training sequence is embedded
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sourceSignal, loc);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
     case 'pn'
-        % Input: (sourceSignal,loc)
-        % - sourceSignal: Input stream signal
+        % Input: (sendableBits,loc)
+        % - sendableBits: Input stream signal
         % - loc: location index of where training sequence is embedded
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(sourceSignal,loc);
+       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(sendableBits,loc);
     otherwise
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sourceSignal, loc);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
 end
 
 %% Signal Modulation (Jaino)
