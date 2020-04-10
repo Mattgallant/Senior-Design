@@ -19,7 +19,7 @@ data_source_selector = 'file';
 %   file_name: name of the file to read from
 %   read_length: number of chars to read from the file
 file_name = ''; %Our current function just uses alice_in_wonderland.txt
-read_length = 60000;
+read_length = 59968;
 
 %IF data_source_selector = 'random'
 %   rand_length: how many random bits to generate
@@ -107,25 +107,36 @@ loc = 50;
 % Output: [sourceCharacters, sendableBits]
 % - soruceCharacters: 2D Matrix of ASCII values
 % - sendableBits: The resulting bitstream
-sourceSignal = Input(read_length);
+[sourceCharacters, sendableBits] = Input(read_length);
 
 %% Training Sequence Injection (Austin, Carolyn)
-% Adds the training sequence to the bit stream
-% Input: TODO
-% - 
-% Output: TODO
-% - 
+% Embeds the training sequence to the bit stream
+% Input: (sendableBits, loc)
+    % - sendableBits: Input stream signal
+    % - loc: location index of where training sequence is embedded
+% Output: (sourceWithTrainingSignal, training_sequence)
+    % - sourceWithTrainingSignal: bitsream with embedded sequence
+    % - training_sequence: Corresponding training sequence (golay or pn)
 switch training_algo
     case 'golay'
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sourceSignal, loc);
+        % Input: (sendableBits,loc)
+        % - sendableBits: Input stream signal
+        % - loc: location index of where training sequence is embedded
+        % Output: (sourceWithTrainingSignal, training_sequence)
+        % - sourceWithTrainingSignal: bitsream with embedded sequence
+        % - training_sequence: Pseudonoise training_sequence
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
+       disp(training_sequence);
     case 'pn'
-        % Input: TODO
-        % - 
-        % Output: TODO
-        % - 
-       sourceWithTrainingSignal =  %PN FUNCTION
+        % Input: (sendableBits,loc)
+        % - sendableBits: Input stream signal
+        % - loc: location index of where training sequence is embedded
+        % Output: (sourceWithTrainingSignal, training_sequence)
+        % - sourceWithTrainingSignal: bitsream with embedded sequence
+        % - training_sequence: Pseudonoise training_sequence
+       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(sendableBits,loc);
     otherwise
-       sourceWithTrainingSignal =  %DEFAULT FUNCTION, Just choose one algo
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
 end
 
 %% Signal Modulation (Jaino)
@@ -187,8 +198,9 @@ Fc = 9000;
 % modulations eventually.
 gainSignal = carrierSignal.*gainFactor;
 
-%TODO: Add AWGN based on the SNR and Attenuation Factor!
-receivedSignal = gainSignal; % + noise
+%Add AWGN based on the SNR and Attenuation Factor!
+SNR = (gainSignal^2)*SNR_input;
+receivedSignal = awgn(gainSignal, SNR); %SNR must be in DB
 
 %% Automatic Gain Control (Phat and Joseph)
 % Estimates the value of the gain factor that occurred in the channel and
@@ -216,26 +228,26 @@ end
 
 
 %% Training Sequence Detection (Austin and Carolyn)
-% Detects the training sequence.... (?)
-% Input: TODO
-% - 
-% Output: TODO
-% - 
+% Detects the corresponding training sequence (golay or pn) and plots it
+% Input: (gainControlledSignal, training_sequence)
+    % - gainControlledSignal: amplitude equalized signal
+    % - training_sequence: Generated training sequence (golay or pn)
+% Output: void
 switch training_algo
     case 'golay'
-        % Input: TODO
-        % - 
-        % Output: TODO
-        % - 
-       sourceWithTrainingSignal =  golay_sequence_detection(training_sequence, gainControlledSignal);
+        % Input: (training_sequence, gainControlledSignal)
+        % - gainControlledSignal: amplitude equalized signal
+        % - trainging_sequence: Generated golay sequence
+        % Output: void
+       golay_sequence_detection(gainControlledSignal, training_sequence);
     case 'pn'
-        % Input: TODO
-        % - 
-        % Output: TODO
-        % - 
-       sourceWithTrainingSignal =  %PN FUNCTION
+        % Input: (gainControlledSignal, training_sequence)
+        % - gainControlledSignal: amplitude equalized signal
+        % - training_sequence: Generated Pseudonoise sequence
+        % Output: void
+       PNSequence_detection(gainControlledSignal, training_sequence);
     otherwise
-       sourceWithTrainingSignal =  %DEFAULT FUNCTION, Just choose one algo
+       golay_sequence_detection(training_sequence, gainControlledSignal);
 end
 
 

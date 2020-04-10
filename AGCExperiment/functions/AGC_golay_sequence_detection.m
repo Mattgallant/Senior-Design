@@ -1,5 +1,5 @@
 % AGC_golay_sequence_detection
-
+bit = bit*2+1
 % Generate Golay sequence
 % Embed sequence within input signal
 % Use Ga as the sequence and embed in the input_modulation.m before
@@ -9,6 +9,13 @@ loc =50;
 r = 100;
 signal = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
 header = reshape(Ga, [1,32]);
+disp(header)
+for bit = 1: length(header)
+    if header(bit)== -1
+        header(bit) = 0;
+    end
+end
+disp(header)
 %data=[sign(randn(1,loc-1)) header sign(randn(1,r))];
 data = [signal(1:10) header signal(10:end)]
 % Pass signal through channel to the reciever
