@@ -1,31 +1,10 @@
 %Takes in a file converts to bits and then creates bpsk 4pam and 8pam modulations
 %Specify number of bits from source to send(Pick multiples of both 3 and 2)
 %Jaino Vennatt
-function [sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal] = input_modulation(numberOfBits)
-    %Open source file
-    numberOfBits=300;
-    filePointer= fopen('alice_in_wonderland.txt');
-    %Read in characters of book
-    fileValues= fscanf(filePointer,'%c');
-    %Convert character values to binary
-    binaryValues = dec2bin(fileValues);
-    %CharactersBeingTested divided by 8 because of size of character is 8bit
-    sourceCharacters= fileValues(1:fix(numberOfBits/8)); %in ascii
-    %disp(sourceCharacters);
-    %Get the number of Rows and Columns of Binary Data
-    [rows,columns] = size(binaryValues);
-    %Reshapes to one row, and necessary number of Columns
-    reshapedBinaryValuesArray= reshape(binaryValues', 1, rows*columns);
-    %Creates the array for the number of bits to send 
-    sendableBits= reshapedBinaryValuesArray(1:numberOfBits);
-    %disp(sendableBits);
-
-    %01 01 01 00 11 11
-    %1 1 1 -1 3 3
-
+function [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
+    
     fourPamModValue = mod((length(sendableBits)),2);
     eightPamModValue = mod((length(sendableBits)),3);
-
     BPSKSignal= zeros(1, length(sendableBits));
     FourPamSignal=zeros(1, ((fix(length(sendableBits))/2)+fourPamModValue));
     EightPamSignal=zeros(1, ((fix(length(sendableBits))/3)+eightPamModValue));
