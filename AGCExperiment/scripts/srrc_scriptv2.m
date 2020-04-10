@@ -21,7 +21,8 @@ srrc = rcosdesign(beta,nysm,samplesPerSymbol,'sqrt');
 %Normalize Filter
 srrc = srrc * 1/max(srrc);
 filter_delay = nysm / (2*dataRate);
-%fvtool(srrc,'Analysis','impulse')
+figure(1)
+fvtool(srrc,'Analysis','impulse')
 
 %Generate ramdom bitstream
 x = randi([0 1],dataLength,1);
@@ -78,6 +79,13 @@ legend('SRRC, Upconverted Data','Location','southeast');
 %This is the one that works
 figure(4)
 plot(t(1:300),yc(1:300),'m-'); hold off;
+axis([-3 300 -2 2])
+xlabel('Time');
+ylabel('Amplitude');
+legend('SRRC, Upconverted Data','Location','southeast');
+
+figure(5)
+plot(yc(1:300),'m-'); hold off;
 axis([-3 300 -2 2])
 xlabel('Time');
 ylabel('Amplitude');
