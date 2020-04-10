@@ -1,7 +1,7 @@
 % AGC_golay_sequence_detection
 % Detect Ga sequence within reveived signal
 
-function[]= golay_sequence_detection(header, data)
+function[]= golay_sequence_detection(data, header)
     y=xcorr(header, data);                 % do cross correlation
     [m,ind]=max(y);                        % location of largest correlation
     headstart=length(data)-ind+1;          % place where header starts
