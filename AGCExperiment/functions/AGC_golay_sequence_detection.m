@@ -5,11 +5,9 @@
 % Use Ga as the sequence and embed in the input_modulation.m before
 % modulation occurs
 [Ga,Gb] = wlanGolaySequence(32);
-loc =100;
+loc =50;
 r = 100;
 header = reshape(Ga, [1,32]);
-disp(size(header));
-disp(size(loc));
 data=[sign(randn(1,loc-1)) header sign(randn(1,r))];
 
 % Pass signal through channel to the reciever
@@ -23,13 +21,12 @@ if ( loc == headstart )
     totalCorrect = totalCorrect + 1;
 end
 
-totalCorrect / totalRuns
-subplot(3,1,1), stem(header)           % plot header
+totalCorrect / totalRuns;
+subplot(4,1,1), stem(header)           % plot header
 title('Header')
-subplot(3,1,2), stem(data)             % plot data sequence
+subplot(4,1,2), stem(data)             % plot data sequence
 title('Data with embedded header')
-subplot(3,1,3), stem(y)                % plot correlation
+subplot(4,1,3), stem(y)                % plot correlation
 title('Correlation of header with data')
-
-%plot(abs(xcorr(data,input).^2))
-
+subplot(4,1,4),plot(abs(xcorr(data,header).^2))
+title('Javis Plot')
