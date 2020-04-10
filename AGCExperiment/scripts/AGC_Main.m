@@ -2,52 +2,10 @@
 %this experiment. All functions should be plugged into this file so it can
 %be tested.
 
-%% USER DEFINED GENERAL PARAMETERS
-
-%Random Number Generator settings
-rng_setting = 'default';
-
 %% USER DEFINED BITSTREAM PARAMETERS
 
-%Data Source: 'file' || 'random' ||  'fixed'
-%   'file': reads input from a file
-%   'random': generates random 0 and 1 data
-%   'fixed': uses a manually defined bitstream array
-data_source_selector = 'file';
-
-%IF data_source_selector = 'file', these values are used
-%   file_name: name of the file to read from
-%   read_length: number of chars to read from the file
-file_name = ''; %Our current function just uses alice_in_wonderland.txt
+% read_length: number of chars to read from the file
 read_length = 59968;
-
-%IF data_source_selector = 'random'
-%   rand_length: how many random bits to generate
-rand_length = 0;
-
-%IF data_source_selector = 'fixed'
-%   fixed_ bitstream: the fixed bitstream as a row vector
-fixed_bitstream = [ 0 1 0 0 1 1 0 0 0 1 1 1 0];
-
-%General Bitstream Parameters
-%   bitstream_format: the format of the bitstream: 'double' || 'logical;
-%   column: if true, make the bitstream a column vector
-bitstream_format = 'double';
-column = false;
-
-%% USER DEFINED ENCODING PARAMETERS (unused)
-%We do not intend to use encoding for this experiment, but this is nice to
-%have incase we come back and add it to this experiment.
-
-%Encoding Type: 'LDPC' || 'Turbo' || 'Convolutional'
-%   'LDPC': uses comm.LDPCEncoder and comm.LDPCDecoder on default settings
-%   'Turbo': LTE Turbocode
-%   'Convolutional': 
-encoding_type = 'Convolutional';
-
-%General coding properties 
-%   bitrate: sets the bitrate for the encoding, default: 1
-bitrate = 1;
 
 %% USER DEFINED MODULATION PARAMETERS
 %For this experiment, we will currently be just testing BPSK, 4PAM & 8PAM
@@ -59,14 +17,6 @@ bitrate = 1;
 %   4PAM: Pulse Amplitude Modulation, modulation order 4
 modulation_type = 'BPSK';
 
-%IF modulation_type = 'QAM'
-%   M: modulation order, default 16
-%   demodulation_decision: 'soft' || 'hard'
-%       'soft': uses approx. llr with noise variance set
-%       'hard': uses exact llr with noie variance set
-M = 16;
-demodulation_decision = 'soft';
-
 %% Signal to Noise Ratio Test Values
 %IF SNR_input_type = 'SNR_vector'
 %   SNR_vector: define SNR values with range and step size
@@ -76,10 +26,9 @@ SNR_vector = 0:2:40;
 %   EbNo: define EbNo range with step size of 1
 EbNo = (0:12)';
 
-%SNR Input Type: 'SNR_vector' || 'EbNo'
-%   'SNR_vector': uses a defined set of SNR values in db
-%   'EbNo': uses a defines set of EbNo values in db
-SNR_input = SNR_vector;
+%% BER Rate Vector and Gain Error
+ber_vector = zeros(1, length(SNR_vector));
+gainError_vector = zeros(1, length(SNR_vector));
 
 %% USER DEFINED ATTENTUATION PARAMETERS
 gainFactor = 10;
@@ -90,15 +39,14 @@ AGC_algo = 'grad';
 
 %% USER DEFINED TRAINING SEQUENCE PARAMETERS
 %Training Algo: 'golay' || 'pn'
+%Loc: Location where we inject the training sequence into the original data
+%stream.
 training_algo = 'golay';
 loc = 50;
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%% SIMULATION %
-%For now, I have just placed comments with the order of functions and what
-%the expected input and output of each function should be. We will plug in
-%the actual functions later
+%% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%This is where the simulation takes place. 
 
 %% Bitstream Generation (Jaino)
 % Generates a bitstream from a file.
@@ -109,8 +57,31 @@ loc = 50;
 % - sendableBits: The resulting bitstream
 [sourceCharacters, sendableBits] = Input(read_length);
 
+%% Signal Modulation (Jaino)
+% Modulates the input signal using a given modulation scheme. takes
+% sourceWithTrainingSignal and modulates
+% [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
+% Input: TODO
+% - sendableBits: Vector of bits to be modulated
+% Output:
+% - BPSKSignal
+% - FourPamSignal
+% - EightPamSignal
+[BPSKSignal,FourPamSignal, EightPamSignal] = Modulation(sendableBits);
+switch modulation_type
+    case 'BPSK'
+        modulatedSignal = BPSKSignal;
+    case '4PAM'
+        modulatedSignal = FourPamSignal;
+    case '8PAM'
+        modulatedSignal = EightPamSignal;
+    otherwise 
+        modulatedSignal = BPSKSignal;
+end
+
 %% Training Sequence Injection (Austin, Carolyn)
-% Embeds the training sequence to the bit stream
+% Embeds the training sequence to the bit stream either at the beginning or
+% end of the data bits
 % Input: (sendableBits, loc)
     % - sendableBits: Input stream signal
     % - loc: location index of where training sequence is embedded
@@ -125,8 +96,7 @@ switch training_algo
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
-       disp(training_sequence);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, loc);
     case 'pn'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
@@ -134,148 +104,99 @@ switch training_algo
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(sendableBits,loc);
+       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(modulatedSignal,loc);
     otherwise
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, loc);
 end
 
-%% Signal Modulation (Jaino)
-% Modulates the input signal using a given modulation scheme. takes
-% sourceWithTrainingSignal and modulates
-% [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
-% Input: TODO
-% - sendableBits: Vector of bits to be modulated
-% Output:
-% - 
-[BPSKSignal,FourPamSignal, EightPamSignal] = Modulation(sourceWithTrainingSignal);
-switch modulation_type
-    case 'BPSK'
-        modulatedSignal = BPSKSignal;
-    case '4PAM'
-        modulatedSignal = FourPamSignal;
-    case '8PAM'
-        modulatedSignal = EightPamSignal;
-    otherwise 
-        modulatedSignal = BPSKSignal;
-end
-       
-   
-%% Upsampling (Neel)
-% Upsamples the input signal
-% Input: (bitstream,upsample_factor,user)
-% - bitstream: input signal to be upsampled
-% - upsample_factor: Upsampling Factor L, a good option is 3.
-% - user: true or false, if true, uses our user defined upsampler
-% Output: user_upsampled_bitstream
-% - user_upsampled_bitsream: new vector of upsampled signal
-L = 3;
-%upsampledSignal = upsampler(modulatedSignal', L, true);
+%For loop is here because it allows us to test multiple different SNR
+%values. It starts here b/c SNR values only affect noise in the channel,
+%transmitter doesn't need to be in the for loop.
+for index=1:length(SNR_vector)
+    %% SIGNAL NOW TRANSMITTED, Channel Attentuation and Noise addition
+    % In the channel, the attentuation factor will effect both the noise and
+    % the original data itself. Corrected for attenuation factor noise will be
+    % added to the signal that will be received on the other side.
+
+    %Multiply the signal by the gain factor
+    gainSignal = carrierSignal*gainFactor;
+
+    %Add AWGN based on the SNR and Attenuation Factor!
+    SNR = (gainFactor^2)*SNR_vector(index);
+    receivedSignal = awgn(gainSignal, 10*log10(SNR)); %SNR must be in DB, ARE UNITS RIGHT HERE???
 
 
-%% Pulse Shaping and Upconversion to Carrier Frequency(Neel)
-% Useses SRRC pulse shaping and upconverts the signal to the carrier
-% frequency as a cosine wave.
-% Input: (x,Nsym,beta,sampsPerSym,R,Fc)
-% - x: Input signal to be pulse shaped and translated to carrier freq.
-% - Nsym: Filter span in symbol durations (?)
-% - beta: Rolloff factor (?)
-% - sampsPerSym: Upsampling factor (same as L above)?
-% - R: Data Rate (?)
-% - Fc: Desired carrier frequency
-% Output:
-% - yc: The resulting signal vector
-Nsym = 6;
-beta = 1;
-sampsPerSym = 6;
-R = 500;
-Fc = 9000;
-[transmissionTimes, carrierSignal] = SRRC(modulatedSignal,Nsym,beta,L,R,Fc);
-
-
-%% SIGNAL NOW TRANSMITTED, Channel Attentuation
-% Simply multiplies the gain factor across the entire signal to create the
-% received signals. This will need to be done for multiple different
-% modulations eventually.
-gainSignal = carrierSignal.*gainFactor;
-
-%Add AWGN based on the SNR and Attenuation Factor!
-SNR = (gainSignal^2)*SNR_input;
-receivedSignal = awgn(gainSignal, SNR); %SNR must be in DB
-
-%% Automatic Gain Control (Phat and Joseph)
-% Estimates the value of the gain factor that occurred in the channel and
-% corrects the input signal to correct amplitude level.
-switch AGC_algo
-    case 'grad'
-        % Gradient Descent Algorithim
-        % Input: (r)
-        % - r: The signal to be equalized
-        % Output: [output, amplitudeOverIterations]
-        % - output: The amplitude equalized signal
-        % - amplitudeOverIterations: A vector of the amplitude estimations (TODO)
-        [gainControlledSignal, gainEstimation] = AGCgrad(receivedSignal);
-    case 'lms'
-        % LMS Algorithim
-        % Input: (r)
-        % - r: The signal to be equalized
-        % Output: [output, estimations]  TODO
-        % - output: The amplitude equalized signal
-        % - estimations: A vector of the amplitude estimations (TODO)
-        [gainControlledSignal, gainEstimation] = AGC_LMS(receivedSignal);
-    otherwise
-        [gainControlledSignal, gainEstimation] = AGCgrad(receivedSignal);
-end
-
-
-%% Training Sequence Detection (Austin and Carolyn)
-% Detects the corresponding training sequence (golay or pn) and plots it
-% Input: (gainControlledSignal, training_sequence)
-    % - gainControlledSignal: amplitude equalized signal
+    %% Training Sequence Detection (Austin and Carolyn)
+    % Detects the corresponding training sequence (golay or pn), outputs the
+    % training sequence and outputs the rest of the exclusively received data
+    % bits.
+    % Input: (receivedSignal, training_sequence)
+    % - receivedSignal: The noisy signal passed through the channel
     % - training_sequence: Generated training sequence (golay or pn)
-% Output: void
-switch training_algo
-    case 'golay'
-        % Input: (training_sequence, gainControlledSignal)
-        % - gainControlledSignal: amplitude equalized signal
-        % - trainging_sequence: Generated golay sequence
-        % Output: void
-       golay_sequence_detection(gainControlledSignal, training_sequence);
-    case 'pn'
-        % Input: (gainControlledSignal, training_sequence)
-        % - gainControlledSignal: amplitude equalized signal
-        % - training_sequence: Generated Pseudonoise sequence
-        % Output: void
-       PNSequence_detection(gainControlledSignal, training_sequence);
-    otherwise
-       golay_sequence_detection(training_sequence, gainControlledSignal);
+    % Output: [trainingSequence, receivedDataSignal]
+    % - trainingSequence: The detected training sequence used in AGC
+    % - receivedDataSignal: the rest of the signal (the data)
+    switch training_algo
+        case 'golay'
+            % Input: (training_sequence, gainControlledSignal)
+            % - gainControlledSignal: amplitude equalized signal
+            % - trainging_sequence: Generated golay sequence
+            % Output: void
+           [trainingSequence, receivedDataSignal] = golay_sequence_detection(gainControlledSignal, training_sequence);
+        case 'pn'
+            % Input: (gainControlledSignal, training_sequence)
+            % - gainControlledSignal: amplitude equalized signal
+            % - training_sequence: Generated Pseudonoise sequence
+            % Output: void
+            [trainingSequence, receivedDataSignal] = PNSequence_detection(gainControlledSignal, training_sequence);
+        otherwise
+            [trainingSequence, receivedDataSignal] = golay_sequence_detection(training_sequence, gainControlledSignal);
+    end
+
+
+    %% Automatic Gain Control (Phat and Joseph)
+    % Use detected training sequence to estimate the gain factor. Then divide
+    % that data signal by this factor to bring it back to (hopefully) right
+    % amplitude level
+
+    %Correct data signal based on the gain factor using the formula Javi
+    %provided us with this last week. Should be a simple mathmatical
+    %calculation.
+
+    estimatedGain = %TODO
+    gainErrorSquared = %TODO, not sure what this is exactly, may need to ask Javi, is it Mean Square Error??
+    gainError_vector(index) = gainErrorSquared;  %For plotting later
+
+    gainControlledBits = receivedDataSignal/estimatedGain;
+
+    %% Demodulate the data
+    % Demodulates the data signal and assigns it to a final estimation of the
+    % transmitted bits. Calculates the Bit Error Rate (Number of bit
+    % errors/Total bits transmitted)
+
+    %Use gainControlledBits and demodulate here
+
+    demodulatedBits = %The final estimation of the bits, TODO
+
+    BER = %TODO, calculate BER 
+    ber_vector(index) = BER;  %For plotting later...
 end
-
-
-
 
 %% Plots (Matt)
-% TODO
 
-
-
-% Plot the Gain Estimate vs Iteration
-iterations = linspace(0, length(gainEstimation), length(gainEstimation));
-
+% TODO: Plot difference between Estimated and True gain (error squared) vs
+% SNR
 figure(1)
-semilogy(iterations, gainEstimation);
-title('Coded vs. Non-coded QPSK')
-xlabel('Iteration')
-ylabel('Gain Factor Estimate')
+semilogy(SNR_vector, gainError_vector);
+title('')
+xlabel('SNR (dB)')
+ylabel('Gain estimate error')
 %axis([-2 10 10e-5 1])
 
-% Plot the BER vs SNR
+% TODO: Plot the BER vs SNR
 figure(2)
-semilogy(SNR_input.', BER)
+semilogy(SNR_vector.', ber_vector);
 title("BER vs SNR for " + modulation_type + " modulated signal using " + agc_algo + " AGC");
 xlabel('SNR (dB)')
 ylabel('BER')
 %axis([-2 10 10e-5 1])
-
-
-
-
