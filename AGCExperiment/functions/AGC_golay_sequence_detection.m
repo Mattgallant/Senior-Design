@@ -7,9 +7,10 @@
 [Ga,Gb] = wlanGolaySequence(32);
 loc =50;
 r = 100;
+signal = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
 header = reshape(Ga, [1,32]);
-data=[sign(randn(1,loc-1)) header sign(randn(1,r))];
-
+%data=[sign(randn(1,loc-1)) header sign(randn(1,r))];
+data = [signal(1:10) header signal(10:end)]
 % Pass signal through channel to the reciever
 % COMPLETED by other functions
 

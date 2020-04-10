@@ -15,3 +15,4 @@ function [sourceCharacters,sendableBits] = Input(numberOfBits)
     %Creates the array for the number of bits to send 
     sendableBits= reshapedBinaryValuesArray(1:numberOfBits);
     %disp(sendableBits);
+end

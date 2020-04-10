@@ -99,17 +99,47 @@ training_algo = 'golay';
 %the expected input and output of each function should be. We will plug in
 %the actual functions later
 
-%% Bitstream Generation and Modulation (Jaino)
-% Generates a bitstream from a file and modulates it using 3 different
-% modulation schemes.
+%% Bitstream Generation (Jaino)
+% Generates a bitstream from a file.
 % Input: (numberOfBits) --> use read_length parameter
 % - numberOfBits (must be a multiple of both 2 and 3)
-% Output: [sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal]
-% - sourceCharacters: vector of originally generated bits
-% - BPSKSignal: vector of BPSK modulated bits
-% - FourPamSignal: vector of 4PAM modulated bits
-% - EightPamSignal: vector of 8PAM modulated bits
-[sourceCharacters,BPSKSignal,FourPamSignal,EightPamSignal] = input_modulation(read_length);
+% Output: [sourceCharacters, sendableBits]
+% - soruceCharacters: 2D Matrix of ASCII values
+% - sendableBits: The resulting bitstream
+sourceSignal = Input(read_length);
+
+%% Training Sequence Injection (Austin, Carolyn)
+% Adds the training sequence to the bit stream
+% Input: TODO
+% - 
+% Output: TODO
+% - 
+switch training_algo
+    case 'golay'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %GOLAY FUNCTION
+    case 'pn'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %PN FUNCTION
+    otherwise
+       sourceWithTrainingSignal =  %DEFAULT FUNCTION, Just choose one algo
+end
+
+%% Signal Modulation (Jaino)
+% Modulates the input signal using a given modulation scheme. takes
+% sourceWithTrainingSignal and modulates
+% [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
+% Input: TODO
+% - sendableBits: Vector of bits to be modulated
+% Output:
+% - 
+[BPSKSignal,FourPamSignal, EightPamSignal] = Modulation(sourceWithTrainingSignal);
 switch modulation_type
     case 'BPSK'
         modulatedSignal = BPSKSignal;
@@ -117,18 +147,11 @@ switch modulation_type
         modulatedSignal = FourPamSignal;
     case '8PAM'
         modulatedSignal = EightPamSignal;
-    otherwise
+    otherwise 
         modulatedSignal = BPSKSignal;
 end
-
-%% Training Sequence Injection (Austin, Carolyn)
-% Adds the training sequence to the bit stream
-switch training_algo
-    case 'golay'
-       modulatedWithTrainingSignal =  
-    case 'pn'
-       modulatedWithTrainingSignal = 
-
+       
+   
 %% Upsampling (Neel)
 % Upsamples the input signal
 % Input: (bitstream,upsample_factor,user)
@@ -191,7 +214,27 @@ end
 
 
 %% Training Sequence Detection (Austin and Carolyn)
-% TODO
+% Detects the training sequence.... (?)
+% Input: TODO
+% - 
+% Output: TODO
+% - 
+switch training_algo
+    case 'golay'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %GOLAY FUNCTION TODO
+    case 'pn'
+        % Input: TODO
+        % - 
+        % Output: TODO
+        % - 
+       sourceWithTrainingSignal =  %PN FUNCTION
+    otherwise
+       sourceWithTrainingSignal =  %DEFAULT FUNCTION, Just choose one algo
+end
 
 
 
