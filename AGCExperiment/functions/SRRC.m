@@ -10,4 +10,7 @@ y = upfirdn(b_data,srrc,samplesPerSymbol);
 %Correct for propagation delay
 yc = y(filter_delay*Fs + 1:end);
 
+%Upconversion - NOT WORKING
+yc = yc.*cos(2*pi*t.*Fc);
+
 end

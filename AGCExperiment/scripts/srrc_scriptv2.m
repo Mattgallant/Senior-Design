@@ -48,11 +48,22 @@ axis([-3 200 -2 2])
 
 %Convolve with upsampled BPSK symbols
 base = conv(b_data,srrc);
+base = base(filter_delay*Fs + 1:end);
 
-t = 1000 * (0:dataLength*samplesPerSymbol-1) / Fc;
+t = 1000 * (0:dataLength*samplesPerSymbol-1) / Fs;
 
 %Convert to transmit signal
 signal = yc.*cos(2*pi*t.*Fc);
+
+upConv = dsp.DigitalUpConverter(... 
+     'InterpolationFactor',20,...
+     'SampleRate',Fs,...
+     'Bandwidth',2e3,...
+     'StopbandAttenuation',55,...
+     'PassbandRipple',0.2,...
+     'CenterFrequency',6e3);
+ 
+ signal = upConv(yc);
 
 figure(3)
 plot(signal,'m-'); hold off;
