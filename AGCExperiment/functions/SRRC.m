@@ -1,22 +1,23 @@
+function yc = SRRC(x,Nsym,beta,sampsPerSym,R,Fc)
 %NOTE this script's math is is adapted almost word-for-word from the MATLAB example here:
 %https://www.mathworks.com/help/comm/examples/raised-cosine-filtering.html#d120e18189
 %Added unity gain
 %Manipulated resulting grpah
 %Added example bitstream for use in direct comparison
 %Started work on carrier modulation
-Nsym = 6;           % Filter span in symbol durations - default
-beta = 0.5;         % Roll-off factor - default 
-sampsPerSym = 6;    % Upsampling factor - aslso helps to smoothen out the graph
+%Nsym = 6;           % Filter span in symbol durations - default
+%beta = 0.5;         % Roll-off factor - default 
+%sampsPerSym = 6;    % Upsampling factor - aslso helps to smoothen out the graph
 
 % Parameters
-DataL = 10000;             % Data length in symbols
-R = 500;               % Data rate
-Fs = R * sampsPerSym;   % Sampling frequency
-Fc = 1000;               %Carrier frequency, 1kHz
+%DataL = 8;             % Data length in symbols
+%R = 500;               % Data rate
+%Fs = R * sampsPerSym;   % Sampling frequency
+%Fc = 1000;               %Carrier frequency, 1kHz
 
 %Example Bitstream mapped with BPSK
 %Note: must be a column vector e.g. (1,elements)
-x =  2*randi([0 1],DataL,1) - 1;
+%x = [ 1; -1; 1; 1; -1; -1; -1; 1];
 
 %(optional) print bitstream and size array-dimensions of bitstream
 %fprintf("%d ",bitstream);
@@ -38,40 +39,19 @@ rctFilt3 = comm.RaisedCosineTransmitFilter(...
   'FilterSpanInSymbols',    Nsym, ...
   'OutputSamplesPerSymbol', sampsPerSym);
 
-fvtool(rctFilt3)
-
 %set unity passband gain and verify it's 1
 b = coeffs(rctFilt3);
 rctFilt3.Gain = 1/sum(b.Numerator);
-bNorm = coeffs(rctFilt3);
-sum(bNorm.Numerator)
+%bNorm = coeffs(rctFilt3);
+%sum(bNorm.Numerator)
 
 % Upsample and filter.
 yc = rctFilt3([x; zeros(Nsym/2,1)]);
 % Correct for propagation delay by removing filter transients
 yc = yc(fltDelay*Fs+1:end);
-%message, phase modulation of filtered signal
-phasedev = pi/2;
-message = yc*cos(2*pi*tx*Fc);
+%Convert to carrier Frequency Fc
+%phasedev = pi/2;
+yc = yc*cos(2*pi*tx*Fc);
 %message = pmmod(signal,Fc,Fs,phasedev);
 
-figure(1)
-spectrumAnalyzer = dsp.SpectrumAnalyzer('SampleRate',1000);
-spectrumAnalyzer(yc)
-
-figure(2)
-% Plot data.
-stem(tx(1:100), x(1:100), 'kx'); hold on;
-% Plot filtered data.
-plot(to, yc, 'm-'); hold off;
-% Set axes and labels.
-axis([-1 200 -1.7 1.7]);  xlabel('Time (ms)'); ylabel('Amplitude');
-legend('Mapped-Bitstream', 'Sqrt. Raised Cosine', 'Location', 'southeast');
-
-
-%figure(3)
-%modulate on cosine carrier of 1kHz
-%plot(message); hold off;
-%axis([-1 DataL*8 -1.7 1.7]); xlabel('Time (ms)'); ylabel('Amplitude');
-%legend('Modulated SRRC Data','Location','southeast');
-
+end

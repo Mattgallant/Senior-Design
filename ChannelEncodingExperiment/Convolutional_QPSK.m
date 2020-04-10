@@ -3,12 +3,12 @@
 clc, clear all, close all;
 
 %Create vectors that will be used to plot and generate data
-SNR_vector = -2:.20:7;                                    %Start:StepSize:End
+SNR_vector = -2:.20:10;                                    %Start:StepSize:End
 %SNR_vector = 2;
 CodedBER = zeros(length(SNR_vector),1);
 BER = zeros(length(SNR_vector),1);
 
-N = 1000000;                                             %Size of the bitstream
+N = 100000;                                             %Size of the bitstream
 
 %Simulate non-coded QPSK
 for snri = 1:length(SNR_vector)
@@ -131,6 +131,7 @@ title('Coded vs. Non-coded QPSK')
 legend('Uncoded','Convolutional Coded');
 xlabel('SNR (dB)')
 ylabel('BER')
+axis([-2 10 10e-5 1])
 
 %Plot the coded version of QPSK
 figure(2)
@@ -138,3 +139,4 @@ semilogy(SNR_vector.', CodedBER)
 title('Coded QPSK')
 xlabel('SNR (dB)')
 ylabel('BER')
+axis([-2 10 10e-5 1])
