@@ -4,7 +4,7 @@
 % training sequence
 function [embeddedStream, training_sequence] = Embed_PNSequence(bitstream, splitIndex)
     % Create Pseudonumber sequence object with certain properties
-    pnSequence = comm.PNSequence('Polynomial',[3 2 0],'SamplesPerFrame',7,'InitialConditions',[0 0 1]);
+    pnSequence = comm.PNSequence('Polynomial',[5 2 0],'SamplesPerFrame',32,'InitialConditions',[0 0 0 0 1]);
 
     % Generate the PN training sequence
     training_sequence = pnSequence();

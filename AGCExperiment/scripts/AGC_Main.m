@@ -19,7 +19,7 @@ data_source_selector = 'file';
 %   file_name: name of the file to read from
 %   read_length: number of chars to read from the file
 file_name = ''; %Our current function just uses alice_in_wonderland.txt
-read_length = 60000;
+read_length = 59968;
 
 %IF data_source_selector = 'random'
 %   rand_length: how many random bits to generate
@@ -126,6 +126,7 @@ switch training_algo
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
        [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(sendableBits, loc);
+       disp(training_sequence);
     case 'pn'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
@@ -197,8 +198,9 @@ Fc = 9000;
 % modulations eventually.
 gainSignal = carrierSignal.*gainFactor;
 
-%TODO: Add AWGN based on the SNR and Attenuation Factor!
-receivedSignal = gainSignal; % + noise
+%Add AWGN based on the SNR and Attenuation Factor!
+SNR = (gainSignal^2)*SNR_input;
+receivedSignal = awgn(gainSignal, SNR); %SNR must be in DB
 
 %% Automatic Gain Control (Phat and Joseph)
 % Estimates the value of the gain factor that occurred in the channel and
