@@ -42,8 +42,6 @@ AGC_algo = 'grad';
 %Loc: Location where we inject the training sequence into the original data
 %stream.
 training_algo = 'golay';
-loc = 50;
-
 
 %% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This is where the simulation takes place. 
@@ -96,7 +94,7 @@ switch training_algo
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, loc);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
     case 'pn'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
@@ -106,7 +104,7 @@ switch training_algo
         % - training_sequence: Pseudonoise training_sequence
        [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(modulatedSignal,loc);
     otherwise
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, loc);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
 end
 
 %For loop is here because it allows us to test multiple different SNR

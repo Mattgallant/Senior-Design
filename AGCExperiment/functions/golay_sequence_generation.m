@@ -1,9 +1,7 @@
-%AGC_golay_sequence_generation
-% Generate Golay sequence
-% Embed sequence within input signal
-% Use Ga as the sequence and embed in the input_modulation.m before
-% modulation occurs
-function[data_in, training_sequence]= golay_sequence_generation(sendableBits, loc)
+% AGC_golay_sequence_generation
+% Generate Golay sequence Embed Ga sequence at beginning of modulated signal
+
+function[data_in, training_sequence]= golay_sequence_generation(modulatedSignal)
     [Ga,Gb] = wlanGolaySequence(32);
     training_sequence = reshape(Ga, [1,32]);
     for bit = 1: length(training_sequence)
@@ -11,4 +9,4 @@ function[data_in, training_sequence]= golay_sequence_generation(sendableBits, lo
             training_sequence(bit) = 0;
         end
     end
-    data_in = [sendableBits(1:loc) num2str(training_sequence) sendableBits(loc+1:end)];
+    data_in = [training_sequence modulatedSignal];
