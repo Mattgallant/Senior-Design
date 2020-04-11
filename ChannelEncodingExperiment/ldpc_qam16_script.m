@@ -21,6 +21,7 @@ BER_hard = zeros(size(EbNo));
 BER_unc_hard = zeros(size(EbNo));
 %Set bitrate
 rate = 1/2;
+rate_unc = 1;
 %Main loop iterating through snr_range values
 for n = 1 : length(EbNo)
     %Convert Eb/No EbNo to SNR 
@@ -29,7 +30,7 @@ for n = 1 : length(EbNo)
     [numErrsSoft,numErrsHard,numErrsUncHard,num_bits,frames] = deal(0);
     fprintf("%d\n",EbNo(n));
     %Loop until a bit threshold per snr value is reached
-    while frames < 100
+    while frames < 10
         % Generate binary data and convert to symbols
         data_in = randi([0 1],sym_frame*k,1); 
         %LDPC encode the data_in
@@ -39,6 +40,7 @@ for n = 1 : length(EbNo)
         
         %SNR
         snr = 10^(EbNo(n)/10)*rate*log2(M);
+        snr_unc = 10^(EbNo(n)/10)*rate_unc*log2(M);
         SNR = EbNo(k) * rate * log2(M);
         %snr = SNR * rate * log2(M);
         %snr = 10.^(SNR/10);
@@ -55,7 +57,7 @@ for n = 1 : length(EbNo)
         %channel_block = comm.AWGNChannel('EbNo',EbNo(n));
         %Pass modulated data data_mod through AWGN channel
         channel = awgn(data_mod,snr,'measured');
-        unc_channel = awgn(unc_data_mod,snr,'measured');
+        unc_channel = awgn(unc_data_mod,snr_unc,'measured');
         %channel = step(channel_block,data_mod);
         %unc_channel = step(channel_block,unc_data_mod);
         %Demodulate the channel using hard-decision

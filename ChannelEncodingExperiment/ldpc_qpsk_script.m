@@ -32,7 +32,7 @@ for n = 1 : length(EbNo)
     fprintf("%d\n",EbNo(n));
     
     %Loop until number of frames is reached
-    for nn = 1 : 10
+    for nn = 1 : 1
         % Generate binary data and convert to symbols
         data_in = randi([0 1],N,1); 
         %LDPC encode the data_in
@@ -61,8 +61,8 @@ for n = 1 : length(EbNo)
         numErrsUncHard = numErrsUncHard + num_err_unc_hard;
     end
     %Estimate BER for soft decision making
-    BER_soft(n) = numErrsSoft/(10*N);
-    BER_unc_hard(n) = numErrsUncHard/(10*N);   
+    BER_soft(n) = numErrsSoft/(1*N);
+    BER_unc_hard(n) = numErrsUncHard/(1*N);   
 end
 %Plot data
 semilogy(EbNo,BER_soft,'-*')
