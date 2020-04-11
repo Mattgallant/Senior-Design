@@ -151,12 +151,19 @@ for index=1:length(SNR_vector)
     % Use detected training sequence to estimate the gain factor. Then divide
     % that data signal by this factor to bring it back to (hopefully) right
     % amplitude level
-
+    
     %Correct data signal based on the gain factor using the formula Javi
     %provided us with this last week. Should be a simple mathmatical
     %calculation.
-
-    estimatedGain = %TODO
+    
+    %-----AGC_Known_Function------
+    %Stabilizes the amplitude of a received signal given that he original is
+    %known
+    %Inputs:    r - the signal to be equalized
+    %           knownSignal - the known original signal
+    %Outputs:   estimation - gain factor estimation   
+    estimatedGain = AGC_Known_Function(receivedSignal, modulatedSignal); %is modulated signal the signal expected at this point?
+    
     gainErrorSquared = %TODO, not sure what this is exactly, may need to ask Javi, is it Mean Square Error??
     gainError_vector(index) = gainErrorSquared;  %For plotting later
 
