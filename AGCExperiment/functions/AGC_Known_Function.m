@@ -3,9 +3,8 @@
 %known
 %Inputs:    r - the signal to be equalized
 %           knownSignal - the known original signal
-%Outputs:   signal - the signal after amplitude equalization
-%           estimation - gain factor estimation
-function [signal, estimation] = AGC_Known_Function(r, knownSignal)
+%Outputs:   estimation - gain factor estimation   
+function estimation = AGC_Known_Function(r, knownSignal)
     %agc
     estimation = r./knownSignal;
     signal = r ./ division;
