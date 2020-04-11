@@ -6,8 +6,7 @@
 %Outputs:   estimation - gain factor estimation   
 function estimation = AGC_Known_Function(r, knownSignal)
     %agc
-    estimation = r./knownSignal;
-    signal = r ./ division;
+    estimation = sum(r./knownSignal) / length(r);   %1/N * sum(r[n]/s[n])
    
 end
 
