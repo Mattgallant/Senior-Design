@@ -134,7 +134,7 @@ for index=1:length(SNR_vector)
             % - gainControlledSignal: amplitude equalized signal
             % - trainging_sequence: Generated golay sequence
             % Output: void
-           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(gainControlledSignal, training_sequence);
+           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
         case 'pn'
             % Input: (receivedSignal)
             % - receivedSignal: noisy signal passed through the channel
@@ -143,7 +143,7 @@ for index=1:length(SNR_vector)
             % - receivedDataSignal: the rest of the signal (the data)
             [noisyTSequence, receivedDataSignal] = PNSequence_detection(receivedSignal);
         otherwise
-            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(training_sequence, gainControlledSignal);
+            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
     end
 
 
