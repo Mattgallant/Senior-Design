@@ -40,7 +40,7 @@ AGC_algo = 'grad';
 %% USER DEFINED TRAINING SEQUENCE PARAMETERS
 %Training Algo: 'golay' || 'pn'
 
-training_algo = 'pn';
+training_algo = 'golay';
 
 %% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This is where the simulation takes place. 
