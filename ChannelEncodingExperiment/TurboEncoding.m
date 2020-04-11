@@ -14,6 +14,10 @@ rate_unc = 1;
 BER_enc = zeros(size(EbNo));
 BER_unc = zeros(size(EbNo));
 
+% initialize error rate to measure BER
+enc_hError = comm.ErrorRate;
+unc_hError = comm.ErrorRate;
+
 %Main loop iterating through snr_range values
 for n = 1 : length(EbNo)
     
@@ -32,8 +36,9 @@ for n = 1 : length(EbNo)
     hTEnc = comm.TurboEncoder('InterleaverIndicesSource','Input port');
     hTDec = comm.TurboDecoder('InterleaverIndicesSource','Input port','NumIterations',4);
     
-    % initialize error rate to measure BER
-    hError = comm.ErrorRate;
+    % reset Error Rate for next EbNo value
+    reset(enc_hError);
+    reset(unc_hError)
     
     fprintf("%d\n",noiseVar_unc);
     fprintf("%d\n",noiseVar_enc);
@@ -50,13 +55,13 @@ for n = 1 : length(EbNo)
         receivedSignal = awgn(modSignal,snr_enc,'measured');
         demodSignal = qamdemod(receivedSignal,M,'OutputType','llr','NoiseVariance',noiseVar_enc);
         receivedBits = step(hTDec,-demodSignal,intrlvrIndices);
-        encErrorStats = step(hError,data,receivedBits);
+        encErrorStats = step(enc_hError,data,receivedBits);
         
         % uncoded
         uncModSignal = qammod(double(data),M,'InputType','bit');
         uncReceivedSignal = awgn(uncModSignal,snr_unc,'measured');
         uncDemod = qamdemod(uncReceivedSignal,M,'OutputType','bit','NoiseVariance',noiseVar_unc);
-        uncErrorStats = step(hError,data,uncDemod);
+        uncErrorStats = step(unc_hError,data,uncDemod);
     end
     BER_enc(n) = encErrorStats(1);
     BER_unc(n) = uncErrorStats(1);
