@@ -140,7 +140,7 @@ for index=1:length(SNR_vector)
             % - gainControlledSignal: amplitude equalized signal
             % - trainging_sequence: Generated golay sequence
             % Output: void
-           [trainingSequence, receivedDataSignal] = golay_sequence_detection(gainControlledSignal, training_sequence);
+           [trainingSequence, receivedDataSignal] = golay_sequence_detection(gainControlledSignal);
         case 'pn'
             % Input: (gainControlledSignal, training_sequence)
             % - gainControlledSignal: amplitude equalized signal
@@ -148,7 +148,7 @@ for index=1:length(SNR_vector)
             % Output: void
             [trainingSequence, receivedDataSignal] = PNSequence_detection(gainControlledSignal, training_sequence);
         otherwise
-            [trainingSequence, receivedDataSignal] = golay_sequence_detection(training_sequence, gainControlledSignal);
+            [trainingSequence, receivedDataSignal] = golay_sequence_detection(gainControlledSignal);
     end
 
 
