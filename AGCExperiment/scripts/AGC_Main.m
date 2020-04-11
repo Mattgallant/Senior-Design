@@ -114,7 +114,7 @@ for index=1:length(SNR_vector)
     gainSignal = carrierSignal*gainFactor;
 
     %Add AWGN based on the SNR and Attenuation Factor!
-    SNR = (gainFactor^2)*SNR_vector(index);
+    SNR = (gainFactor^2)*SNR_vector(index);           %New SNR w/ gain factor
     receivedSignal = awgn(gainSignal, 10*log10(SNR)); %SNR must be in DB, ARE UNITS RIGHT HERE???
 
 
@@ -164,10 +164,10 @@ for index=1:length(SNR_vector)
     %Outputs:   estimation - gain factor estimation   
     estimatedGain = AGC_Known_Function(receivedSignal, modulatedSignal); %is modulated signal the signal expected at this point?
     
-    gainErrorSquared = %TODO, not sure what this is exactly, may need to ask Javi, is it Mean Square Error??
-    gainError_vector(index) = gainErrorSquared;  %For plotting later
-
     gainControlledBits = receivedDataSignal/estimatedGain;
+    
+    gainErrorSquared = (gainFactor - estimatedGain)^2;
+    gainError_vector(index) = gainErrorSquared;  %For plotting later
 
     %% Demodulate the data
     % Demodulates the data signal and assigns it to a final estimation of the
@@ -176,9 +176,9 @@ for index=1:length(SNR_vector)
 
     %Use gainControlledBits and demodulate here
 
-    demodulatedBits = %The final estimation of the bits, TODO
+    %demodulatedBits = %The final estimation of the bits, TODO
 
-    BER = %TODO, calculate BER 
+    [err,BER] = biterr(demodulatedBits,sendableBits);
     ber_vector(index) = BER;  %For plotting later...
 end
 
@@ -204,9 +204,9 @@ end
 % SNR
 figure(2)
 semilogy(SNR_vector, gainError_vector);
-title('')
+title('Gain Estimation Error')
 xlabel('SNR (dB)')
-ylabel('Gain estimate error')
+ylabel('Gain Estimate Error')
 %axis([-2 10 10e-5 1])
 
 % TODO: Plot the BER vs SNR
