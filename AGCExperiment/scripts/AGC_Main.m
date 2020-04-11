@@ -5,7 +5,7 @@
 %% USER DEFINED BITSTREAM PARAMETERS
 
 % read_length: number of chars to read from the file
-read_length = 59968;
+read_length = 1000000;
 
 %% USER DEFINED MODULATION PARAMETERS
 %For this experiment, we will currently be just testing BPSK, 4PAM & 8PAM
@@ -15,12 +15,13 @@ read_length = 59968;
 %   QPSK: Quadrature Phase Shift Keying
 %   BPSK: Binary Phase Shift Keying
 %   4PAM: Pulse Amplitude Modulation, modulation order 4
-modulation_type = 'BPSK';
+modulation_type = '8PAM';
 
 %% Signal to Noise Ratio Test Values
 %IF SNR_input_type = 'SNR_vector'
 %   SNR_vector: define SNR values with range and step size
-SNR_vector = 0:2:40;
+SNR_vector = -20:.2:30;
+snr_vector = 10.^(SNR_vector/10); %natural units
 
 %IF SNR_input_type = 'EbNo'
 %   EbNo: define EbNo range with step size of 1
@@ -31,7 +32,7 @@ ber_vector = zeros(1, length(SNR_vector));
 gainError_vector = zeros(1, length(SNR_vector));
 
 %% USER DEFINED ATTENTUATION PARAMETERS
-gainFactor = 10;
+gainFactor = 1/2;
 
 %% USER DEFINED AGC PARAMETERS
 %AGC Algo: 'grad' || 'lms'
@@ -41,6 +42,7 @@ AGC_algo = 'grad';
 %Training Algo: 'golay' || 'pn'
 
 training_algo = 'golay';
+sequence_length = 128;
 
 %% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This is where the simulation takes place. 
@@ -89,7 +91,7 @@ switch training_algo
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, sequence_length);
     case 'pn'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
@@ -98,7 +100,7 @@ switch training_algo
         % - training_sequence: Pseudonoise training_sequence
        [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(modulatedSignal);
     otherwise
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, sequence_length);
 end
 
 %For loop is here because it allows us to test multiple different SNR
@@ -111,12 +113,13 @@ for index=1:length(SNR_vector)
     % added to the signal that will be received on the other side.
 
     %Multiply the signal by the gain factor
-    gainSignal = carrierSignal*gainFactor;
+    gainSignal = sourceWithTrainingSignal*gainFactor;
 
     %Add AWGN based on the SNR and Attenuation Factor!
-    SNR = (gainFactor^2)*SNR_vector(index);           %New SNR w/ gain factor
-    receivedSignal = awgn(gainSignal, 10*log10(SNR)); %SNR must be in DB, ARE UNITS RIGHT HERE???
-
+    SNR = (gainFactor^2)*snr_vector(index);           %New SNR w/ gain factor
+    %receivedSignal = awgn(gainSignal, 10*log10(SNR)); %SNR must be in DB, ARE UNITS RIGHT HERE???
+    receivedPower = mean(abs(gainSignal).^2);
+    receivedSignal = gainSignal + sqrt(receivedPower/SNR)*randn(1,length(gainSignal));
 
     %% Training Sequence Detection (Austin and Carolyn)
     % Detects the corresponding training sequence (golay or pn), outputs the
@@ -134,7 +137,7 @@ for index=1:length(SNR_vector)
             % - gainControlledSignal: amplitude equalized signal
             % - trainging_sequence: Generated golay sequence
             % Output: void
-           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
+           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal, sequence_length);
         case 'pn'
             % Input: (receivedSignal)
             % - receivedSignal: noisy signal passed through the channel
@@ -143,7 +146,7 @@ for index=1:length(SNR_vector)
             % - receivedDataSignal: the rest of the signal (the data)
             [noisyTSequence, receivedDataSignal] = PNSequence_detection(receivedSignal);
         otherwise
-            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
+            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal, sequence_length);
     end
 
 
@@ -162,8 +165,8 @@ for index=1:length(SNR_vector)
     %Inputs:    r - the signal to be equalized
     %           knownSignal - the known original signal
     %Outputs:   estimation - gain factor estimation   
-    estimatedGain = AGC_Known_Function(receivedSignal, modulatedSignal); %is modulated signal the signal expected at this point?
-    
+    estimatedGain = AGC_Known_Function(noisyTSequence, training_sequence); %is modulated signal the signal expected at this point?
+    %disp(estimatedGain);
     gainControlledBits = receivedDataSignal/estimatedGain;
     
     gainErrorSquared = (gainFactor - estimatedGain)^2;
@@ -176,29 +179,28 @@ for index=1:length(SNR_vector)
 
     %Use gainControlledBits and demodulate here
 
-    %demodulatedBits = %The final estimation of the bits, TODO
-
-    [err,BER] = biterr(demodulatedBits,sendableBits);
+    demodulatedBits =  Demodulation(modulation_type, gainControlledBits);
+    [err,BER] = biterr(demodulatedBits(1:length(sendableBits)),sendableBits);
     ber_vector(index) = BER;  %For plotting later...
 end
 
 %% Plots (Matt)
 
-% Plot correlation between respective training sequence and final demodulated data 
-    switch training_algo
-        case 'golay'
-            figure(1)
-            plot(abs(xcorr(demodData,trainingSequence)).^2)
-            title('Golay Sequence Correlation')
-        case 'pn'
-            figure(1)
-            plot(abs(xcorr(demodData,trainingSequence)).^2)
-            title('Pseudonoise Sequence Correlation')
-        otherwise
-            figure(1)
-            plot(abs(xcorr(demodData,trainingSequence)).^2)
-            title('Golay Sequence Correlation')
-    end
+% % Plot correlation between respective training sequence and final demodulated data 
+%     switch training_algo
+%         case 'golay'
+%             figure(1)
+%             plot(abs(xcorr(demodulatedBits,training_sequence)).^2)
+%             title('Golay Sequence Correlation')
+%         case 'pn'
+%             figure(1)
+%             plot(abs(xcorr(demodulatedBits,training_sequence)).^2)
+%             title('Pseudonoise Sequence Correlation')
+%         otherwise
+%             figure(1)
+%             plot(abs(xcorr(demodulatedBits,training_sequence)).^2)
+%             title('Golay Sequence Correlation')
+%     end
 
 % TODO: Plot difference between Estimated and True gain (error squared) vs
 % SNR
@@ -212,7 +214,7 @@ ylabel('Gain Estimate Error')
 % TODO: Plot the BER vs SNR
 figure(3)
 semilogy(SNR_vector.', ber_vector);
-title("BER vs SNR for " + modulation_type + " modulated signal using " + agc_algo + " AGC");
+title("BER vs SNR for " + modulation_type + " modulated signal using ");
 xlabel('SNR (dB)')
 ylabel('BER')
 %axis([-2 10 10e-5 1])
