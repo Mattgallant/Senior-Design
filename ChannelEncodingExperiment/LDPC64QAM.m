@@ -58,14 +58,14 @@ function returnedBER = LDPC64QAM(EbNo, frameNum)
             Energy_modSigUncoded = mean(abs(modSigUncoded).^2);
 
             % Create noise signal and add it to received signal
-            snr = 10.^(SNR/10);
+            snr = 10^(EbNo(k)/10)*codeRate*log2(M);%10.^(SNR/10);
             noise_var = 1/snr;   % snr = Energy_x/noise_var
             noise_varUncoded = 1/snr;   % snr = Energy_x/noise_var
 
             % Pass through AWGN channel
             %cave in and use the awgn function
-            rxSig = awgn(modSig,SNR,'measured');
-            rxSigUncoded = awgn(modSigUncoded,SNR,'measured');
+            rxSig = awgn(modSig,snr,'measured');
+            rxSigUncoded = awgn(modSigUncoded,snr,'measured');
 
             % Step 5: Convert received signal to bits
 
