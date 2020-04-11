@@ -5,7 +5,7 @@ rng default
 % Sets the QAM level to 4 (QPSK)
 M = 4;
 k = log2(M);
-EbNo = (-4:1:8)';
+EbNo = (-4:0.5:10)';
 frmLen = 1000*k;
 rate_enc = 1/3;
 rate_unc = 1;
@@ -23,11 +23,11 @@ for n = 1 : length(EbNo)
     
     %Convert Eb/No EbNo to SNR 
     snr_unc = EbNo(n) + 10*log10(k*rate_unc);
-    snr_enc = EbNo(n) + 10*log10(k*rate_enc);
+    snr_enc = 10^(EbNo(n)/10)*rate_enc*log2(M);
   
     %Calculate noise variance for unit power
     noiseVar_unc = (10.^(snr_unc/10));
-    noiseVar_enc = (10.^(snr_enc/10));
+    noiseVar_enc = 1/snr_enc;
     
     % interleaver indices for turbo encoding
     intrlvrIndices = randperm(frmLen);
@@ -39,9 +39,6 @@ for n = 1 : length(EbNo)
     % reset Error Rate for next EbNo value
     reset(enc_hError);
     reset(unc_hError)
-    
-    fprintf("%d\n",noiseVar_unc);
-    fprintf("%d\n",noiseVar_enc);
     
     % loop over 100 frames
     for frmIdx = 1:100
