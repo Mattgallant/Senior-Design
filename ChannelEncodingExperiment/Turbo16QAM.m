@@ -1,11 +1,12 @@
-function BER_unc = Turbo16QAM(EbNo,frameNum)
+function BER_enc = Turbo16QAM(EbNo,frameNum)
 
-    %Sets the QAM level (modulation order) to 16
+        %Sets the QAM level (modulation order) to 16
     M = 16;
 
     %Sets the bits per symbol
     k = log2(M);
 
+    %Sets Eb/No (db) range
     frmLen = 1000*k;
     %Inits. BER vectors
     BER_enc = zeros(size(EbNo));
@@ -75,5 +76,4 @@ function BER_unc = Turbo16QAM(EbNo,frameNum)
         BER_enc(n) = encErrorStats(1);
         BER_unc(n) = uncErrorStats(1);
     end
-
 end

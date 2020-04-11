@@ -1,7 +1,7 @@
 %EbNo input sequence
-EbNo =  (-2:0.2:10)';
+EbNo =  (-4:0.2:10)';
 %Frames per EbNo value
-frames = 1;
+frames = 100;
 
 %16QAM Turbo Code
 ber_Turbo16QAM = Turbo16QAM(EbNo,frames);
@@ -16,7 +16,7 @@ semilogy(EbNo,ber_TurboQPSK,'-b*');
 hold on
 semilogy(EbNo,berawgn(EbNo,'qam',16),'-m')
 hold on
-semilogy(EbNo,berawgn(EbNo,'psk',4,'nodiff'),'-g')
+semilogy(EbNo,berawgn(EbNo,'psk',4,'nodiff'),'-b')
 legend('16QAM Turbo','QPSK Turbo','16QAM berawgn Uncoded','QPSK berawgn Uncoded','location','best')
 grid
 xlabel('Eb/No (dB)')

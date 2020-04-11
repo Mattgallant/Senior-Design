@@ -1,6 +1,6 @@
 function BER_enc = TurboQPSK(EbNo,frameNum)
 
-    % Sets the QAM level to 4 (QPSK)
+        % Sets the QAM level to 4 (QPSK)
     M = 4;
     k = log2(M);
     frmLen = 1000*k;
@@ -18,13 +18,16 @@ function BER_enc = TurboQPSK(EbNo,frameNum)
     %Main loop iterating through snr_range values
     for n = 1 : length(EbNo)
 
-        %Convert Eb/No EbNo to SNR 
-        snr_unc = EbNo(n) + 10*log10(k*rate_unc);
-        snr_enc = 10^(EbNo(n)/10)*rate_enc*log2(M);
+        % snr for noise variance
+        snr = 10^(EbNo(n)/10)*rate_enc*log2(M);
 
-        %Calculate noise variance for unit power
+        % snr and noise varience and awgn encoded
+        snr_enc = EbNo(n) + 10*log10(k*rate_enc);
+        noiseVar_enc = 1/snr;
+
+        % snr and noise varience and awgn uncoded
+        snr_unc = EbNo(n) + 10*log10(k*rate_unc);
         noiseVar_unc = (10.^(snr_unc/10));
-        noiseVar_enc = 1/snr_enc;
 
         % interleaver indices for turbo encoding
         intrlvrIndices = randperm(frmLen);
@@ -38,8 +41,7 @@ function BER_enc = TurboQPSK(EbNo,frameNum)
         reset(unc_hError)
 
         % loop over 100 frames
-        for frmIdx = 1:frameNum
-
+        for frmIdx = 1:frameNum     
             % generate bit sequence
             data = randi([0 1],frmLen,1);
 
@@ -57,8 +59,8 @@ function BER_enc = TurboQPSK(EbNo,frameNum)
             uncDemod = qamdemod(uncReceivedSignal,M,'OutputType','bit','NoiseVariance',noiseVar_unc);
             uncErrorStats = step(unc_hError,data,uncDemod);
         end
+        % add BER to vector
         BER_enc(n) = encErrorStats(1);
         BER_unc(n) = uncErrorStats(1);
     end
-
 end
