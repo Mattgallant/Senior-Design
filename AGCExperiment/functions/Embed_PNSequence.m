@@ -1,8 +1,6 @@
-%Embed a PN sequence into bitstream;
+%Embed a PN sequence into the beginning of bitstream;
 % Paramater bitstream - input bitstream
-% Parameter splitIndex - Where we want to split bitstream and embed the
-% training sequence
-function [embeddedStream, training_sequence] = Embed_PNSequence(bitstream, splitIndex)
+function [embeddedStream, training_sequence] = Embed_PNSequence(bitstream)
     % Create Pseudonumber sequence object with certain properties
     pnSequence = comm.PNSequence('Polynomial',[5 2 0],'SamplesPerFrame',32,'InitialConditions',[0 0 0 0 1]);
 
@@ -11,6 +9,4 @@ function [embeddedStream, training_sequence] = Embed_PNSequence(bitstream, split
     training_sequence = training_sequence';
     
     % Embed training sequence into bitstream
-    s1 = bitstream(1:splitIndex);
-    s2 = bitstream(splitIndex+1:end);
-    embeddedStream = horzcat(s1,training_sequence,s2);
+    embeddedStream = horzcat(training_sequence, bitstream);

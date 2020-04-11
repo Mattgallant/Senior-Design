@@ -13,6 +13,17 @@ function [sourceCharacters,sendableBits] = Input(numberOfBits)
     %Reshapes to one row, and necessary number of Columns
     reshapedBinaryValuesArray= reshape(binaryValues', 1, rows*columns);
     %Creates the array for the number of bits to send 
-    sendableBits= reshapedBinaryValuesArray(1:numberOfBits);
-    %disp(sendableBits);
+    characterConversion= reshapedBinaryValuesArray(1:numberOfBits);
+    sendableBits= zeros(1,numberOfBits);    
+    zeroValue='0';
+    oneValue='1';
+    %Converts from character binary values to actual double binary values
+    %Enables better use of modulation and other number based libraries
+    for i=1:1:numberOfBits
+        if(strcmp(characterConversion(i),oneValue))
+            sendableBits(i)=1;
+        elseif(strcmp(characterConversion(i),zeroValue))
+            sendableBits(i)=0;
+        end        
+    end
 end

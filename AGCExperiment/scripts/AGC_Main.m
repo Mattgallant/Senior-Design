@@ -39,8 +39,7 @@ AGC_algo = 'grad';
 
 %% USER DEFINED TRAINING SEQUENCE PARAMETERS
 %Training Algo: 'golay' || 'pn'
-%Loc: Location where we inject the training sequence into the original data
-%stream.
+
 training_algo = 'golay';
 
 %% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -78,19 +77,15 @@ switch modulation_type
 end
 
 %% Training Sequence Injection (Austin, Carolyn)
-% Embeds the training sequence to the bit stream either at the beginning or
-% end of the data bits
-% Input: (sendableBits, loc)
-    % - sendableBits: Input stream signal
-    % - loc: location index of where training sequence is embedded
+% Embeds the training sequence to the bit stream at the beginning of the data bits
+% Input: (modulatedSignal)
+    % - modulatedSignal: Input stream signal
 % Output: (sourceWithTrainingSignal, training_sequence)
-    % - sourceWithTrainingSignal: bitsream with embedded sequence
-    % - training_sequence: Corresponding training sequence (golay or pn)
+    % - sourceWithTrainingSignal: bitsream with embedded sequence\
 switch training_algo
     case 'golay'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
-        % - loc: location index of where training sequence is embedded
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
@@ -98,11 +93,10 @@ switch training_algo
     case 'pn'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
-        % - loc: location index of where training sequence is embedded
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(modulatedSignal,loc);
+       [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(modulatedSignal);
     otherwise
        [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
 end
@@ -120,7 +114,7 @@ for index=1:length(SNR_vector)
     gainSignal = carrierSignal*gainFactor;
 
     %Add AWGN based on the SNR and Attenuation Factor!
-    SNR = (gainFactor^2)*SNR_vector(index);
+    SNR = (gainFactor^2)*SNR_vector(index);           %New SNR w/ gain factor
     receivedSignal = awgn(gainSignal, 10*log10(SNR)); %SNR must be in DB, ARE UNITS RIGHT HERE???
 
 
@@ -128,11 +122,11 @@ for index=1:length(SNR_vector)
     % Detects the corresponding training sequence (golay or pn), outputs the
     % training sequence and outputs the rest of the exclusively received data
     % bits.
-    % Input: (receivedSignal, training_sequence)
+    % Input: (receivedSignal)
     % - receivedSignal: The noisy signal passed through the channel
-    % - training_sequence: Generated training sequence (golay or pn)
+    % - trainingSequence: Generated training sequence (golay or pn)
     % Output: [trainingSequence, receivedDataSignal]
-    % - trainingSequence: The detected training sequence used in AGC
+    % - trainingSequence: The detected training sequence that will be used in AGC
     % - receivedDataSignal: the rest of the signal (the data)
     switch training_algo
         case 'golay'
@@ -140,15 +134,16 @@ for index=1:length(SNR_vector)
             % - gainControlledSignal: amplitude equalized signal
             % - trainging_sequence: Generated golay sequence
             % Output: void
-           [trainingSequence, receivedDataSignal] = golay_sequence_detection(gainControlledSignal, training_sequence);
+           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
         case 'pn'
-            % Input: (gainControlledSignal, training_sequence)
-            % - gainControlledSignal: amplitude equalized signal
-            % - training_sequence: Generated Pseudonoise sequence
-            % Output: void
-            [trainingSequence, receivedDataSignal] = PNSequence_detection(gainControlledSignal, training_sequence);
+            % Input: (receivedSignal)
+            % - receivedSignal: noisy signal passed through the channel
+            % Output: (trainingSequence, receivedDataSignal
+            % - training_sequence: detected PN training sequence that will be used in AGC
+            % - receivedDataSignal: the rest of the signal (the data)
+            [noisyTSequence, receivedDataSignal] = PNSequence_detection(receivedSignal);
         otherwise
-            [trainingSequence, receivedDataSignal] = golay_sequence_detection(training_sequence, gainControlledSignal);
+            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
     end
 
 
@@ -156,16 +151,23 @@ for index=1:length(SNR_vector)
     % Use detected training sequence to estimate the gain factor. Then divide
     % that data signal by this factor to bring it back to (hopefully) right
     % amplitude level
-
+    
     %Correct data signal based on the gain factor using the formula Javi
     %provided us with this last week. Should be a simple mathmatical
     %calculation.
-
-    estimatedGain = %TODO
-    gainErrorSquared = %TODO, not sure what this is exactly, may need to ask Javi, is it Mean Square Error??
-    gainError_vector(index) = gainErrorSquared;  %For plotting later
-
+    
+    %-----AGC_Known_Function------
+    %Stabilizes the amplitude of a received signal given that he original is
+    %known
+    %Inputs:    r - the signal to be equalized
+    %           knownSignal - the known original signal
+    %Outputs:   estimation - gain factor estimation   
+    estimatedGain = AGC_Known_Function(receivedSignal, modulatedSignal); %is modulated signal the signal expected at this point?
+    
     gainControlledBits = receivedDataSignal/estimatedGain;
+    
+    gainErrorSquared = (gainFactor - estimatedGain)^2;
+    gainError_vector(index) = gainErrorSquared;  %For plotting later
 
     %% Demodulate the data
     % Demodulates the data signal and assigns it to a final estimation of the
@@ -174,25 +176,41 @@ for index=1:length(SNR_vector)
 
     %Use gainControlledBits and demodulate here
 
-    demodulatedBits = %The final estimation of the bits, TODO
+    %demodulatedBits = %The final estimation of the bits, TODO
 
-    BER = %TODO, calculate BER 
+    [err,BER] = biterr(demodulatedBits,sendableBits);
     ber_vector(index) = BER;  %For plotting later...
 end
 
 %% Plots (Matt)
 
+% Plot correlation between respective training sequence and final demodulated data 
+    switch training_algo
+        case 'golay'
+            figure(1)
+            plot(abs(xcorr(demodData,trainingSequence)).^2)
+            title('Golay Sequence Correlation')
+        case 'pn'
+            figure(1)
+            plot(abs(xcorr(demodData,trainingSequence)).^2)
+            title('Pseudonoise Sequence Correlation')
+        otherwise
+            figure(1)
+            plot(abs(xcorr(demodData,trainingSequence)).^2)
+            title('Golay Sequence Correlation')
+    end
+
 % TODO: Plot difference between Estimated and True gain (error squared) vs
 % SNR
-figure(1)
+figure(2)
 semilogy(SNR_vector, gainError_vector);
-title('')
+title('Gain Estimation Error')
 xlabel('SNR (dB)')
-ylabel('Gain estimate error')
+ylabel('Gain Estimate Error')
 %axis([-2 10 10e-5 1])
 
 % TODO: Plot the BER vs SNR
-figure(2)
+figure(3)
 semilogy(SNR_vector.', ber_vector);
 title("BER vs SNR for " + modulation_type + " modulated signal using " + agc_algo + " AGC");
 xlabel('SNR (dB)')
