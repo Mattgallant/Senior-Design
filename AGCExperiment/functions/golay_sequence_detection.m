@@ -1,20 +1,17 @@
 % AGC_golay_sequence_detection
 % Detect Ga sequence within reveived signal
 
-function[]= golay_sequence_detection(data, header)
-    y=xcorr(header, data);                 % do cross correlation
+function[training_sequence, retrieved_sequence]= golay_sequence_detection(data, training_sequence)
+    retrieved_sequence = data(1:32);
+    
+    y=xcorr(training_sequence, data);                 % do cross correlation
     [m,ind]=max(y);                        % location of largest correlation
-    headstart=length(data)-ind+1;          % place where header starts
-    if ( loc == headstart )
-        totalCorrect = totalCorrect + 1;
-    end
-
-    totalCorrect / totalRuns;
-    subplot(4,1,1), stem(header)           % plot header
-    title('Header')
-    subplot(4,1,2), stem(data)             % plot data sequence
-    title('Data with embedded header')
-    subplot(4,1,3), stem(y)                % plot correlation
-    title('Correlation of header with data')
-    subplot(4,1,4),plot(abs(xcorr(data,header).^2))
-    title('Correlation of header with data')
+    
+    % subplot(4,1,1), stem(training_sequence)           % plot training sequence
+    % title('Training Sequence')
+    % subplot(4,1,2), stem(data)             % plot data sequence
+    % title('Data With Embedded Trainging Sequence')
+    % subplot(4,1,3), stem(y)                % plot correlation
+    % title('Correlation of Training Sequence With Data')
+    % subplot(4,1,4),plot(abs(xcorr(data,training_sequence).^2))
+    % title('Correlation of Training Sequence With Data')

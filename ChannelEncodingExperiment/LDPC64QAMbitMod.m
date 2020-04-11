@@ -60,7 +60,7 @@ for k = 1:length(EbNo)
     Energy_modSigUncoded = mean(abs(modSigUncoded).^2);
     
     % Create noise signal and add it to received signal
-    snr = 10.^(SNR/10);
+    snr = 10^(EbNo(k)/10)*codeRate*log2(M);%10.^(SNR/10);
     noise_var = 1/snr;   % snr = Energy_x/noise_var
     noise_varUncoded = 1/snr;   % snr = Energy_x/noise_var
      
@@ -84,8 +84,8 @@ for k = 1:length(EbNo)
 %     rxSigUncoded = chan(modSigUncoded);
  
     %cave in and use the awgn function
-    rxSig = awgn(modSig,SNR,'measured');
-    rxSigUncoded = awgn(modSigUncoded,SNR,'measured');
+    rxSig = awgn(modSig,snr,'measured');
+    rxSigUncoded = awgn(modSigUncoded,snr,'measured');
     
 %     SNR_check = 10*log10(Energy_modSig/noise_var_check);
 %     SNR_checkUncoded = 10*log10(Energy_modSigUncoded/noise_var_checkUncoded);
@@ -119,7 +119,7 @@ for k = 1:length(EbNo)
     [errUncoded,berUncoded]= biterr(rxDataUncoded,txbits);
     
     BER(k) = ber;
-    BERSoft(k) = berSoft;;
+    BERSoft(k) = berSoft;
     BERUncoded(k) = berUncoded;
     
 end
