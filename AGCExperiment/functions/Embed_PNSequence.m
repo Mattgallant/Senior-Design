@@ -1,6 +1,6 @@
 %Embed a PN sequence into the beginning of bitstream;
 % Paramater bitstream - input bitstream
-function [embeddedStream] = Embed_PNSequence(bitstream)
+function [embeddedStream, training_sequence] = Embed_PNSequence(bitstream)
     % Create Pseudonumber sequence object with certain properties
     pnSequence = comm.PNSequence('Polynomial',[5 2 0],'SamplesPerFrame',32,'InitialConditions',[0 0 0 0 1]);
 
