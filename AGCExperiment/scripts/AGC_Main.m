@@ -41,6 +41,7 @@ AGC_algo = 'grad';
 %Training Algo: 'golay' || 'pn'
 
 training_algo = 'golay';
+sequence_length = 128;
 
 %% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This is where the simulation takes place. 
@@ -89,7 +90,7 @@ switch training_algo
         % Output: (sourceWithTrainingSignal, training_sequence)
         % - sourceWithTrainingSignal: bitsream with embedded sequence
         % - training_sequence: Pseudonoise training_sequence
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, sequence_length);
     case 'pn'
         % Input: (sendableBits,loc)
         % - sendableBits: Input stream signal
@@ -98,7 +99,7 @@ switch training_algo
         % - training_sequence: Pseudonoise training_sequence
        [sourceWithTrainingSignal, training_sequence] =  Embed_PNSequence(modulatedSignal);
     otherwise
-       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal);
+       [sourceWithTrainingSignal, training_sequence] =  golay_sequence_generation(modulatedSignal, sequence_length);
 end
 
 %For loop is here because it allows us to test multiple different SNR
@@ -134,7 +135,7 @@ for index=1:length(SNR_vector)
             % - gainControlledSignal: amplitude equalized signal
             % - trainging_sequence: Generated golay sequence
             % Output: void
-           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
+           [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal, sequence_length);
         case 'pn'
             % Input: (receivedSignal)
             % - receivedSignal: noisy signal passed through the channel
@@ -143,7 +144,7 @@ for index=1:length(SNR_vector)
             % - receivedDataSignal: the rest of the signal (the data)
             [noisyTSequence, receivedDataSignal] = PNSequence_detection(receivedSignal);
         otherwise
-            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal);
+            [noisyTSequence, receivedDataSignal] = golay_sequence_detection(receivedSignal, sequence_length);
     end
 
 
