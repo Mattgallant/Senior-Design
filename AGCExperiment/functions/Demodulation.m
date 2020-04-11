@@ -1,5 +1,5 @@
 
-   [demodulatedSignal] = Demodulation(inputSignalType, inputSignal);
+function[demodulatedSignal] = Demodulation(inputSignalType, inputSignal);
     %%%%%%%%%%%%%%%%%Demodulation Section%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     BSPKSignalType= "BPSK";
     FourPAMSignalType= "4PAM";
