@@ -1,7 +1,7 @@
 %EbNo input sequence
 EbNo =  (-2:0.2:10)';
 %Frames per EbNo value
-frames = 1;
+frames = 100;
 
 %LDPC QPSK
 ber_qpskLDPC = qpskLDPC(EbNo,frames);
