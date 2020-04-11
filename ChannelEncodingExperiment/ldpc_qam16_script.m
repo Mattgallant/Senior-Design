@@ -29,7 +29,7 @@ for n = 1 : length(EbNo)
     [numErrsSoft,numErrsHard,numErrsUncHard,num_bits,frames] = deal(0);
     fprintf("%d\n",EbNo(n));
     %Loop until a bit threshold per snr value is reached
-    while frames < 300
+    while frames < 100
         % Generate binary data and convert to symbols
         data_in = randi([0 1],sym_frame*k,1); 
         %LDPC encode the data_in
@@ -92,7 +92,9 @@ hold on
 semilogy(EbNo,BER_unc_hard)
 hold on
 semilogy(EbNo,berawgn(EbNo,'qam',M))
-legend('Soft (Approx. llr)','Harder (llr)','Uncoded','Generic Uncoded','location','best')
+hold on
+semilogy(EbNo,berawgn(EbNo,'psk',4,'nondiff'))
+legend('Soft (Approx. llr)','Harder (llr)','Uncoded','Generic Uncoded','Generic PSK Uncoded','location','best')
 grid
 xlabel('Eb/No (dB)')
 ylabel('Bit Error Rate')
