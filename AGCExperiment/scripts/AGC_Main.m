@@ -5,7 +5,7 @@
 %% USER DEFINED BITSTREAM PARAMETERS
 
 % read_length: number of chars to read from the file
-read_length = 59968;
+read_length = 100000;
 
 %% USER DEFINED MODULATION PARAMETERS
 %For this experiment, we will currently be just testing BPSK, 4PAM & 8PAM
@@ -40,7 +40,7 @@ AGC_algo = 'grad';
 %% USER DEFINED TRAINING SEQUENCE PARAMETERS
 %Training Algo: 'golay' || 'pn'
 
-training_algo = 'golay';
+training_algo = 'pn';
 
 %% SIMULATION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %This is where the simulation takes place. 
@@ -111,7 +111,7 @@ for index=1:length(SNR_vector)
     % added to the signal that will be received on the other side.
 
     %Multiply the signal by the gain factor
-    gainSignal = carrierSignal*gainFactor;
+    gainSignal = sourceWithTrainingSignal*gainFactor;
 
     %Add AWGN based on the SNR and Attenuation Factor!
     SNR = (gainFactor^2)*SNR_vector(index);           %New SNR w/ gain factor
@@ -162,7 +162,7 @@ for index=1:length(SNR_vector)
     %Inputs:    r - the signal to be equalized
     %           knownSignal - the known original signal
     %Outputs:   estimation - gain factor estimation   
-    estimatedGain = AGC_Known_Function(receivedSignal, modulatedSignal); %is modulated signal the signal expected at this point?
+    estimatedGain = AGC_Known_Function(noisyTSequence, training_sequence); %is modulated signal the signal expected at this point?
     
     gainControlledBits = receivedDataSignal/estimatedGain;
     
@@ -178,27 +178,27 @@ for index=1:length(SNR_vector)
 
     %demodulatedBits = %The final estimation of the bits, TODO
 
-    [err,BER] = biterr(demodulatedBits,sendableBits);
-    ber_vector(index) = BER;  %For plotting later...
+    %[err,BER] = biterr(demodulatedBits,sendableBits);
+    %ber_vector(index) = BER;  %For plotting later...
 end
 
 %% Plots (Matt)
 
 % Plot correlation between respective training sequence and final demodulated data 
-    switch training_algo
-        case 'golay'
-            figure(1)
-            plot(abs(xcorr(demodData,trainingSequence)).^2)
-            title('Golay Sequence Correlation')
-        case 'pn'
-            figure(1)
-            plot(abs(xcorr(demodData,trainingSequence)).^2)
-            title('Pseudonoise Sequence Correlation')
-        otherwise
-            figure(1)
-            plot(abs(xcorr(demodData,trainingSequence)).^2)
-            title('Golay Sequence Correlation')
-    end
+%     switch training_algo
+%         case 'golay'
+%             figure(1)
+%             plot(abs(xcorr(demodData,trainingSequence)).^2)
+%             title('Golay Sequence Correlation')
+%         case 'pn'
+%             figure(1)
+%             plot(abs(xcorr(demodData,trainingSequence)).^2)
+%             title('Pseudonoise Sequence Correlation')
+%         otherwise
+%             figure(1)
+%             plot(abs(xcorr(demodData,trainingSequence)).^2)
+%             title('Golay Sequence Correlation')
+%     end
 
 % TODO: Plot difference between Estimated and True gain (error squared) vs
 % SNR
@@ -210,9 +210,9 @@ ylabel('Gain Estimate Error')
 %axis([-2 10 10e-5 1])
 
 % TODO: Plot the BER vs SNR
-figure(3)
-semilogy(SNR_vector.', ber_vector);
-title("BER vs SNR for " + modulation_type + " modulated signal using " + agc_algo + " AGC");
-xlabel('SNR (dB)')
-ylabel('BER')
+% figure(3)
+% semilogy(SNR_vector.', ber_vector);
+% title("BER vs SNR for " + modulation_type + " modulated signal using " + agc_algo + " AGC");
+% xlabel('SNR (dB)')
+% ylabel('BER')
 %axis([-2 10 10e-5 1])
