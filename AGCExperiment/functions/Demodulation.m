@@ -17,8 +17,8 @@ function[demodulatedSignal] = Demodulation(inputSignalType, inputSignal);
         tempSignal = pamdemod(inputSignal,ModulationOrder);
         [rows,numberOfEntries] = size(tempSignal);
         demodulatedSignal = zeros(1,numberOfEntries*2);
-        disp("Demodulatedtemp");
-        disp(tempSignal);
+        %disp("Demodulatedtemp");
+        %disp(tempSignal);
         
         for i=0:1:numberOfEntries-1
             if(tempSignal(i+1)==0)
@@ -43,8 +43,9 @@ function[demodulatedSignal] = Demodulation(inputSignalType, inputSignal);
         tempSignal = pamdemod(inputSignal,ModulationOrder);
         [rows,numberOfEntries] = size(tempSignal);
         demodulatedSignal = zeros(1,numberOfEntries*3);
-        disp("Demodulatedtemp8");
-        disp(tempSignal);
+        
+        %disp("Demodulatedtemp8");
+        %disp(tempSignal);
         
         for i=0:1:numberOfEntries-1
             

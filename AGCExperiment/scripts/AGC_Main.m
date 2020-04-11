@@ -5,7 +5,7 @@
 %% USER DEFINED BITSTREAM PARAMETERS
 
 % read_length: number of chars to read from the file
-read_length = 100000;
+read_length = 1000000;
 
 %% USER DEFINED MODULATION PARAMETERS
 %For this experiment, we will currently be just testing BPSK, 4PAM & 8PAM
@@ -20,7 +20,8 @@ modulation_type = '8PAM';
 %% Signal to Noise Ratio Test Values
 %IF SNR_input_type = 'SNR_vector'
 %   SNR_vector: define SNR values with range and step size
-SNR_vector = 1:.2:20;
+SNR_vector = -20:.2:30;
+snr_vector = 10.^(SNR_vector/10); %natural units
 
 %IF SNR_input_type = 'EbNo'
 %   EbNo: define EbNo range with step size of 1
@@ -115,9 +116,10 @@ for index=1:length(SNR_vector)
     gainSignal = sourceWithTrainingSignal*gainFactor;
 
     %Add AWGN based on the SNR and Attenuation Factor!
-    SNR = (gainFactor^2)*SNR_vector(index);           %New SNR w/ gain factor
+    SNR = (gainFactor^2)*snr_vector(index);           %New SNR w/ gain factor
     %receivedSignal = awgn(gainSignal, 10*log10(SNR)); %SNR must be in DB, ARE UNITS RIGHT HERE???
-    receivedSignal = gainSignal + sqrt(1/SNR)*randn(1,length(gainSignal));
+    receivedPower = mean(abs(gainSignal).^2);
+    receivedSignal = gainSignal + sqrt(receivedPower/SNR)*randn(1,length(gainSignal));
 
     %% Training Sequence Detection (Austin and Carolyn)
     % Detects the corresponding training sequence (golay or pn), outputs the
