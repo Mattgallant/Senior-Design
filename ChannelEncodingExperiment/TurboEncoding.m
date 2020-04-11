@@ -1,52 +1,75 @@
-M = 16;
-%Bits per symbol
-k = log2(M);
-%Number of bits 
-n = 32400;
-%Number of samples per symbol
-L = 1;
-%SNR valuees to test
-snr = (2:0.5:4);
-%snr = [0.25,0.5,0.75,1.0,1.25];
-%Error rate variables
-error_rate = zeros(1,length(snr));
-unc_error_rate = zeros(1,length(snr));
-%Generate random data (binary)
-%rng default;
-data = randi([0 1], n, 1);
-%Init. Turbo encoder and decoder
-EbNo= -6;
-frmLen = 256;
+% Implementation of Turbo Encoding using QPSK
+clear; close all
 rng default
-noiseVar = 10^(-EbNo/10);
-intrlvrIndices = randperm(frmLen);
-hTEnc = comm.TurboEncoder('TrellisStructure',poly2trellis(4,[13 15 17],13),'InterleaverIndices',intrlvrIndices);
-hTDec = comm.TurboDecoder('TrellisStructure',poly2trellis(4,[13 15 17],13),'InterleaverIndices',intrlvrIndices,'NumIterations',4);
-intrlvrInd = randperm(n);
-hChan = comm.AWGNChannel('EbNo',EbNo);
-hError = comm.ErrorRate;
-hMod = comm.QPSKModulator;
-hDemod = comm.QPSKDemodulator('DecisionMethod','Log-likelihood ratio','Variance',noiseVar);
-%Init. channel
-awgnChannel = comm.AWGNChannel('NoiseMethod','Variance','Variance',1);
-errorRate = comm.ErrorRate;
-% Turbo encode the data
-encodedData = hTEnc(data);
-% Modulate encoded data
-modSignal_encoded = qammod(encodedData,M,'InputType','bit','UnitAveragePower',true);
-%Loop through the different SNR values
-for frmIdx = 1:100
-    data = randi([0 1],frmLen,1);
-    encodedData = step(hTEnc,data);
-    modSignal = step(hMod,encodedData);
-    receivedSignal = step(hChan,modSignal);
-    demodSignal = step(hDemod,receivedSignal);
-    receivedBits = step(hTDec,-demodSignal);
-    errorStats = step(hError,data,receivedBits);
-end
 
-%Plot BER vs. SNR for TurboCode
-plot(snr,unc_error_rate,snr,error_rate);
-legend('Uncoded','Turbo Coded');
-xlabel('SNR (db)');
-ylabel('BER');
+% Sets the QAM level to 4 (QPSK)
+M = 4;
+k = log2(M);
+EbNo = (-4:0.5:10)';
+frmLen = 1000*k;
+rate_enc = 1/3;
+rate_unc = 1;
+
+% BER for encoded and uncoded signal
+BER_enc = zeros(size(EbNo));
+BER_unc = zeros(size(EbNo));
+
+% initialize error rate to measure BER
+enc_hError = comm.ErrorRate;
+unc_hError = comm.ErrorRate;
+
+%Main loop iterating through snr_range values
+for n = 1 : length(EbNo)
+    
+    %Convert Eb/No EbNo to SNR 
+    snr_unc = EbNo(n) + 10*log10(k*rate_unc);
+    snr_enc = 10^(EbNo(n)/10)*rate_enc*log2(M);
+  
+    %Calculate noise variance for unit power
+    noiseVar_unc = (10.^(snr_unc/10));
+    noiseVar_enc = 1/snr_enc;
+    
+    % interleaver indices for turbo encoding
+    intrlvrIndices = randperm(frmLen);
+    
+    % initializing turbo encoder and decoder
+    hTEnc = comm.TurboEncoder('InterleaverIndicesSource','Input port');
+    hTDec = comm.TurboDecoder('InterleaverIndicesSource','Input port','NumIterations',4);
+    
+    % reset Error Rate for next EbNo value
+    reset(enc_hError);
+    reset(unc_hError)
+    
+    % loop over 100 frames
+    for frmIdx = 1:100
+        
+        % generate bit sequence
+        data = randi([0 1],frmLen,1);
+        
+        % encoded
+        encodedData = step(hTEnc,data,intrlvrIndices);
+        modSignal = qammod(encodedData,M,'InputType','bit');
+        receivedSignal = awgn(modSignal,snr_enc,'measured');
+        demodSignal = qamdemod(receivedSignal,M,'OutputType','llr','NoiseVariance',noiseVar_enc);
+        receivedBits = step(hTDec,-demodSignal,intrlvrIndices);
+        encErrorStats = step(enc_hError,data,receivedBits);
+        
+        % uncoded
+        uncModSignal = qammod(double(data),M,'InputType','bit');
+        uncReceivedSignal = awgn(uncModSignal,snr_unc,'measured');
+        uncDemod = qamdemod(uncReceivedSignal,M,'OutputType','bit','NoiseVariance',noiseVar_unc);
+        uncErrorStats = step(unc_hError,data,uncDemod);
+    end
+    BER_enc(n) = encErrorStats(1);
+    BER_unc(n) = uncErrorStats(1);
+end
+%Plot data
+semilogy(EbNo,BER_enc,'-*')
+hold on
+semilogy(EbNo,BER_unc, '-o')
+hold on
+semilogy(EbNo,berawgn(EbNo,'qam',M),  '-+')
+legend('Encoded','Uncoded','Generic Uncoded','location','best')
+grid
+xlabel('Eb/No (dB)')
+ylabel('Bit Error Rate')
