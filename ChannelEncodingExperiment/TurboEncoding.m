@@ -1,4 +1,5 @@
 % Implementation of Turbo Encoding using QPSK
+% https://www.mathworks.com/help/comm/ref/comm.turboencoder-system-object.html
 clear; close all
 rng default
 
@@ -41,8 +42,7 @@ for n = 1 : length(EbNo)
     reset(unc_hError)
     
     % loop over 100 frames
-    for frmIdx = 1:100
-        
+    for frmIdx = 1:100     
         % generate bit sequence
         data = randi([0 1],frmLen,1);
         
@@ -60,6 +60,7 @@ for n = 1 : length(EbNo)
         uncDemod = qamdemod(uncReceivedSignal,M,'OutputType','bit','NoiseVariance',noiseVar_unc);
         uncErrorStats = step(unc_hError,data,uncDemod);
     end
+    % add BER to vector
     BER_enc(n) = encErrorStats(1);
     BER_unc(n) = uncErrorStats(1);
 end
