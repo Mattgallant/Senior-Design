@@ -5,7 +5,7 @@
 %% USER DEFINED BITSTREAM PARAMETERS
 
 % read_length: number of chars to read from the file
-read_length = 100000;
+read_length = 1000000;
 
 %% USER DEFINED MODULATION PARAMETERS
 %For this experiment, we will currently be just testing BPSK, 4PAM & 8PAM
@@ -29,11 +29,12 @@ snr_vector = 10.^(SNR_vector/10); %natural units
 EbNo = (0:12)';
 
 %% BER Rate Vector and Gain Error
+iterationNumber = 10;
 ber_vector = zeros(length(modulation_vector), length(SNR_vector));
-gainError_vector = zeros(1, length(SNR_vector));
+gainError_vector = zeros(iterationNumber, length(SNR_vector));
 
 %% USER DEFINED ATTENTUATION PARAMETERS
-gainFactor = 1/15;
+gainFactor = 1/2;
 
 %% USER DEFINED AGC PARAMETERS
 %AGC Algo: 'grad' || 'lms'
@@ -57,28 +58,30 @@ sequence_length = 128;
 % - sendableBits: The resulting bitstream
 [sourceCharacters, sendableBits] = Input(read_length);
 
-for modulation_index = 1:length(modulation_vector)
-    modulation_type = modulation_vector(modulation_index);
-    %% Signal Modulation (Jaino)
-    % Modulates the input signal using a given modulation scheme. takes
-    % sourceWithTrainingSignal and modulates
-    % [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
-    % Input: TODO
-    % - sendableBits: Vector of bits to be modulated
-    % Output:
-    % - BPSKSignal
-    % - FourPamSignal
-    % - EightPamSignal
-    [BPSKSignal,FourPamSignal, EightPamSignal] = Modulation(sendableBits);
-    switch modulation_type;
-        case 'BPSK'
-            modulatedSignal = BPSKSignal;
-        case '4PAM'
-            modulatedSignal = FourPamSignal;
-        case '8PAM'
-            modulatedSignal = EightPamSignal;
-        otherwise 
-            modulatedSignal = BPSKSignal;
+for modulation_index = 1:iterationNumber
+    if modulation_index < 4
+        modulation_type = modulation_vector(modulation_index);
+        %% Signal Modulation (Jaino)
+        % Modulates the input signal using a given modulation scheme. takes
+        % sourceWithTrainingSignal and modulates
+        % [BPSKSignal,FourPamSignal,EightPamSignal] = Modulation(sendableBits)
+        % Input: TODO
+        % - sendableBits: Vector of bits to be modulated
+        % Output:
+        % - BPSKSignal
+        % - FourPamSignal
+        % - EightPamSignal
+        [BPSKSignal,FourPamSignal, EightPamSignal] = Modulation(sendableBits);
+        switch modulation_type
+            case 'BPSK'
+                modulatedSignal = BPSKSignal;
+            case '4PAM'
+                modulatedSignal = FourPamSignal;
+            case '8PAM'
+                modulatedSignal = EightPamSignal;
+            otherwise 
+                modulatedSignal = BPSKSignal;
+        end
     end
 
     %% Training Sequence Injection (Austin, Carolyn)
@@ -156,9 +159,7 @@ for modulation_index = 1:length(modulation_vector)
         %% Automatic Gain Control (Phat and Joseph)
         % Use detected training sequence to estimate the gain factor. Then divide
         % that data signal by this factor to bring it back to (hopefully) right
-        % amplitude level
-
-        %Correct data signal based on the gain factor using the formula Javi
+        % amplitude level. Correct data signal based on the gain factor using the formula Javi
         %provided us with this last week. Should be a simple mathmatical
         %calculation.
 
@@ -173,23 +174,57 @@ for modulation_index = 1:length(modulation_vector)
         gainControlledBits = receivedDataSignal/estimatedGain;
 
         gainErrorSquared = (gainFactor - estimatedGain)^2;
-        gainError_vector(index) = gainErrorSquared;  %For plotting later
+        gainError_vector(modulation_index, index) = gainErrorSquared;  %For plotting later
 
         %% Demodulate the data
         % Demodulates the data signal and assigns it to a final estimation of the
         % transmitted bits. Calculates the Bit Error Rate (Number of bit
         % errors/Total bits transmitted)
-
-        %Use gainControlledBits and demodulate here
-
-        demodulatedBits =  Demodulation(modulation_type, gainControlledBits);
-        [err,BER] = biterr(demodulatedBits(1:length(sendableBits)),sendableBits);
-        ber_vector(modulation_index, index) = BER;  %For plotting later...
+        if modulation_index < 4 %Only need to do this for the 3 modulations
+            demodulatedBits =  Demodulation(modulation_type, gainControlledBits);
+            [err,BER] = biterr(demodulatedBits(1:length(sendableBits)),sendableBits);
+            ber_vector(modulation_index, index) = BER;  %For plotting later...
+        end
     end
 end
 
 %% Plots (Matt)
 
+%Calculate Mean of Gain Squared Error...
+%gainMeanSquaredError = (gainError_vector(1, :) + gainError_vector(2, :) + gainError_vector(3,:))/iterationNumber;
+gainMeanSquaredError = sum(gainError_vector(:, :))/iterationNumber;
+
+% Gain Estimation vs SNR (Mean)
+figure(1)
+semilogy(SNR_vector, gainMeanSquaredError);
+title('Gain Estimation Error (Mean of 10 trials)')
+xlabel('SNR (dB)')
+ylabel('Gain Estimate Error')
+grid
+
+% Gain Estimation vs SNR (No Mean)
+figure(2)
+semilogy(SNR_vector, gainError_vector(1, :));
+title('Gain Estimation Error (no mean)')
+xlabel('SNR (dB)')
+ylabel('Gain Estimate Error')
+grid
+
+% BER vs SNR for BPSK, 4PAM, 8PAM
+figure(3)
+semilogy(SNR_vector.', ber_vector(1, :), '-b');
+hold on
+semilogy(SNR_vector.', ber_vector(2, :), '-g');
+hold on
+semilogy(SNR_vector.', ber_vector(3, :), '-r');
+hold on
+title("BER vs SNR for BPSK, 4PAM, 8PAM");
+legend('BPSK', '4PAM', '8PAM')
+grid
+xlabel('SNR (dB)')
+ylabel('BER')
+
+%% UNUSED
 % % Plot correlation between respective training sequence and final demodulated data 
 %     switch training_algo
 %         case 'golay'
@@ -205,27 +240,3 @@ end
 %             plot(abs(xcorr(demodulatedBits,training_sequence)).^2)
 %             title('Golay Sequence Correlation')
 %     end
-
-% TODO: Plot difference between Estimated and True gain (error squared) vs
-% SNR
-figure(2)
-semilogy(SNR_vector, gainError_vector);
-title('Gain Estimation Error')
-xlabel('SNR (dB)')
-ylabel('Gain Estimate Error')
-%axis([-2 10 10e-5 1])
-
-
-% TODO: Plot the BER vs SNR... NEED TO PLOT ALL 3 MODULATIONS TOGETHER...
-figure(3)
-semilogy(SNR_vector.', ber_vector(1, :), '-b');
-hold on
-semilogy(SNR_vector.', ber_vector(2, :), '-g');
-hold on
-semilogy(SNR_vector.', ber_vector(3, :), '-r');
-hold on
-title("BER vs SNR for various Modulation Scheme");
-legend('BPSK', '4PAM', '8PAM')
-grid
-xlabel('SNR (dB)')
-ylabel('BER')
