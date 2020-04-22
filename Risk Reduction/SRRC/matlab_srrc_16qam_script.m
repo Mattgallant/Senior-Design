@@ -23,16 +23,19 @@ EbNo = -2:0.5:20;
 code_rate = 1/3;
 
 %Init. Turbo encoder and decoder
-turboEncoder = comm.TurboEncoder('InterleaverIndicesSource','Input port');
-turboDecoder = comm.TurboDecoder('InterleaverIndicesSource','Input port','NumIterations',4);
+%turboEncoder = comm.TurboEncoder('InterleaverIndicesSource','Input port');
+%turboDecoder = comm.TurboDecoder('InterleaverIndicesSource','Input port','NumIterations',4);
 
 %Interleaver indices for turbo encoding
- intrlvrInd = randperm(N);
+ %intrlvrInd = randperm(N);
 
 %BER (Bit Error Rate) collection arrays
 BER_QPSK = zeros(1,length(EbNo));
 BER_16QAM = zeros(1,length(EbNo));
 BER_64QAM = zeros(1,length(EbNo));
+unf_BER_QPSK = zeros(1,length(EbNo));
+unf_BER_16QAM = zeros(1,length(EbNo));
+unf_BER_64QAM = zeros(1,length(EbNo));
 
 %Modulation Order Loop
 for mod_order = 1:3
@@ -64,6 +67,7 @@ for mod_order = 1:3
         
         %Upsample and filter
         fitered_signal = upfirdn(data_mod,rrc_filter,oversampling_factor,1);
+        nonfiltered_signal = data_mod;
         
         %Calculate snr
         %snr = EbNo(i) + 10*log10(k) - 10*log10(oversampling_factor);
@@ -72,6 +76,7 @@ for mod_order = 1:3
         
         %"Transmit" signal through AWGN channel
         recieved_signal = awgn(fitered_signal,snr,'measured');
+        unf_recieved_signal = awgn(nonfiltered_signal,snr,'measured');
         
         %Unfilter signal and Account for filter delay
         unfiltered_signal = upfirdn(recieved_signal,rrc_filter,1,oversampling_factor);
@@ -79,36 +84,51 @@ for mod_order = 1:3
         
         %Demodulate data
         recieved_data_demod = qamdemod(unfiltered_signal,M);
+        unf_recieved_data_demod = qamdemod(unf_recieved_signal,M);
         
         %Change data from number to binary
         recieved_data_matrix = de2bi(recieved_data_demod,k);
         recieved_data = recieved_data_matrix(:);
+        unf_recieved_data_matrix = de2bi(unf_recieved_data_demod,k);
+        unf_recieved_data = unf_recieved_data_matrix(:);
+        
         
         %LDPC Decode demodulated hard data
         %enc_decode = step(turboDecoder, -recieved_data, intrlvrInd);
         
         %Calculate BER (Bit Error Rate)
         [num_errors,ber] = biterr(data,recieved_data);
+        [unf_num_errors,unf_ber] = biterr(data,unf_recieved_data);
             if (mod_order == 1)
                 BER_QPSK(i) = ber;
+                unf_BER_QPSK(i) = unf_ber;
             end
             if(mod_order == 2)
                 BER_16QAM(i) = ber;
+                unf_BER_16QAM(i) = unf_ber;
             end
             if(mod_order == 3)
                 BER_64QAM(i) = ber;
+                unf_BER_64QAM(i) = unf_ber;
             end
     end
 end
 
 %Graph BER vs EbNo
 figure(1)
-semilogy(EbNo,BER_QPSK,'-b')
+semilogy(EbNo,BER_QPSK,'-b*')
 hold on
-semilogy(EbNo,BER_16QAM,'-r')
+semilogy(EbNo,BER_16QAM,'-r*')
 hold on
-semilogy(EbNo,BER_64QAM,'-g')
-legend('QPSK','16QAM','64QAM','location','best')
+semilogy(EbNo,BER_64QAM,'-g*')
+hold on
+semilogy(EbNo,unf_BER_QPSK,'-b')
+hold on
+semilogy(EbNo,unf_BER_16QAM,'-r')
+hold on
+semilogy(EbNo,unf_BER_64QAM,'-g')
+legend('SRRC QPSK','SRRC 16QAM','SRRC 64QAM','Non Filtered QPSK','Non Filtered 16QAM','Non Filtered 64QAM','location','best')
+title('BER vs EbNo for SRRC Filtered and Non Filtered QAM Mappings');
 grid
 xlabel('Eb/No')
 ylabel('BER')
