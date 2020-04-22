@@ -6,7 +6,7 @@ recObj = audiorecorder;
 
 %% Record Audio
 disp('Start Speaking.')
-recordblocking(recObj, 1);          %Start a recording block of 1 seconds long, holds control until done
+recordblocking(recObj, 3);          %Start a recording block of 1 seconds long, holds control until done
 disp('End of Recording.');
 
 %% Convert to data array
