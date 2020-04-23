@@ -8,13 +8,16 @@ N = 3e5; % Number of bits to process
 %Filter properties
 oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
 span = 10; % Filter length in symbols
-rolloff = 0.25; % Filter rolloff factor
+rolloff = 0.5; % Filter rolloff factor
 
 %Creating the filter
 rrc_filter = rcosdesign(rolloff,span,oversampling_factor);
 
 %Visualizing the filter impulses
 fvtool(rrc_filter,'Analysis','Impulse')
+h = fvtool(rrc_filter,'Analysis','freq')
+%h.Fs = 1000;
+%h.FrequencyRange='[-Fs/2, Fs/2)';
 
 %EbNo Range
 EbNo = -2:0.5:20;
