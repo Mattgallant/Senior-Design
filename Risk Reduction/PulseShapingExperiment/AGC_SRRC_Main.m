@@ -4,7 +4,7 @@
 %% USER DEFINED BITSTREAM PARAMETERS
 
 % read_length: number of chars to read from the file
-read_length = 1000000;
+read_length = 100000;
 
 %% USER DEFINED MODULATION PARAMETERS
 %For this experiment, we will currently be just testing BPSK & 4PAM
@@ -28,7 +28,7 @@ snr_vector = 10.^(SNR_vector/10); %natural units
 EbNo = (0:12)';
 
 %% BER Rate Vector and Gain Error
-iterationNumber = 3;           %Raise this number to get a more accurate mean squared error for gain
+iterationNumber = 2;           %Raise this number to get a more accurate mean squared error for gain
 filterBer_vector = zeros(length(modulation_vector), length(SNR_vector));
 ber_vector = zeros(length(modulation_vector), length(SNR_vector));
 gainError_vector = zeros(iterationNumber, length(SNR_vector));
@@ -111,10 +111,15 @@ for modulation_index = 1:iterationNumber
     %Filter properties
     oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
     span = 10; % Filter length in symbols
-    rolloff = 0.25; % Filter rolloff factor
+    rolloff = .1; % Filter rolloff factor
 
     %Creating the filter
     rrc_filter = rcosdesign(rolloff,span,oversampling_factor);
+    
+    %fvtool(rrc_filter,'Analysis','Impulse')
+    h = fvtool(rrc_filter,'Analysis','freq')
+    h.Fs = 44100;
+    h.FrequencyRange='[-Fs/2, Fs/2)';
     
     %Upsample and filter
     filteredSignal = upfirdn(sourceWithTrainingSignal,rrc_filter,oversampling_factor,1);
@@ -226,20 +231,22 @@ end
 gainMeanSquaredError = sum(gainError_vector(:, :))/iterationNumber;
 
 % Gain Estimation vs SNR (Mean)
-figure(1)
-semilogy(SNR_vector, gainMeanSquaredError);
-title("Gain Estimation Error (Mean of " + num2str(iterationNumber) + " trials)")
-xlabel('SNR (dB)')
-ylabel('Gain Estimate Error')
-grid
+% figure(1)
+% semilogy(SNR_vector, gainMeanSquaredError);
+% title("Gain Estimation Error (Mean of " + num2str(iterationNumber) + " trials)")
+% xlabel('SNR (dB)')
+% ylabel('Gain Estimate Error')
+% grid
 
 % Gain Estimation vs SNR (No Mean)
-figure(2)
-semilogy(SNR_vector, gainError_vector(1, :));
-title('Gain Estimation Error (no mean)')
-xlabel('SNR (dB)')
-ylabel('Gain Estimate Error')
-grid
+% figure(2)
+% semilogy(SNR_vector, gainError_vector(1, :));
+% title('Gain Estimation Error (no mean)')
+% xlabel('SNR (dB)')
+% ylabel('Gain Estimate Error')
+% grid
+
+fvtool(rrc_filter,'Analysis','Impulse')
 
 % BER vs SNR for BPSK, 4PAM, 8PAM
 figure(3)
