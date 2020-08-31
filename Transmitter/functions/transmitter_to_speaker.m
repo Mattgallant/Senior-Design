@@ -1,7 +1,9 @@
 function transmitter_to_speaker(wave)
 %TRANSMITTER_TO_SPEAKER Plays WAVE over speaker
-%   Outputs WAVE at a sampling rate of 44.1kHz as a sound.   
+%   Outputs WAVE at a sampling rate of 44.1kHz as a sound.  
     Fs = 44100;                    % Sampling Frequency of 44.1kHz
+    
+    disp("SOUND PLAYING");
     sound(wave, Fs)                % Produce WAVE as sound
 end
 
