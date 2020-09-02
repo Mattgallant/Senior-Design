@@ -8,14 +8,21 @@ function [upconverted_wave] = upconvert(wave)
     dt = 1/Fs;                  % Seconds per sample
     
     % Create the carrier wave
-    t = (0:dt:(length(wave) - 1)/Fs);      % NOT SURE IF THIS IS RIGHT! - Matt. This should be as "long" as input wave...
+    t = (0:dt:(length(wave) - 1)/Fs);   % Create time vector for transmition. Recall want 44.1k "samples" per second.
     w = 2*pi*center_frequency;      % Radian value to create 9kHz
     carrier = sin(w*t);             % Create carrier sinewave
     
-    disp("Time is: " + t)
-    disp("Wave is: " + wave)
-    disp("Carrier wave is : " + carrier)
-    
+%     figure(1);
+%     plot(t,carrier);
+%     xlabel('time (in seconds)');
+%     title('Carrier Wave');
+%     zoom xon;
+%     
+%     figure(2);
+%     plot(t,wave.*carrier);
+%     xlabel('time (in seconds)');
+%     title('Carrier Wave Modulated');
+%     zoom xon;
     upconverted_wave = wave.* carrier;
 end
 

@@ -28,7 +28,7 @@
 
 %% Upconversion (Matt)
 % upconvert
-    wave = [1, 2, 3, 4];
+    wave = randi(10, 1, 5*44100);
     upconverted_wave = upconvert(wave);
 
 %% Output to speaker (Matt)
