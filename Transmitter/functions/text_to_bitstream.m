@@ -1,12 +1,9 @@
 
 %TEXT_TO_BITSTREAM Function that converts a text document to a bitstream
 %   Function takes in a value that represents the number of bits to be sent
-%   and then opens up the alice in wonderland text file and converts it to
-%   bits until the specified amount is reached
+%   and the text file and converts it to bits until the specified amount is reached
 
-function [sourceCharacters,sendableBits] = text_to_bitstream(numberOfBits)
-    %Open source file
-    filePointer= fopen('alice_in_wonderland.txt');
+function [sourceCharacters,sendableBits] = text_to_bitstream(filePointer,numberOfBits)
     %Read in characters of book
     fileValues= fscanf(filePointer,'%c');
     %Convert character values to binary

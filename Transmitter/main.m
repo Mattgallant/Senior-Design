@@ -4,10 +4,13 @@
 
 
 %% Input Data (Text File, String)
+filePointer= fopen('alice_in_wonderland.txt');
+read_length = 1000000;
 
 
 %% Bitstream Conversion (Jaino)
 % text_to_bitstream
+[sourceCharacters, sendableBits] = text_to_bitstream(filePointer, read_length);
 
 
 %% Channel Encoding (Joseph) 
