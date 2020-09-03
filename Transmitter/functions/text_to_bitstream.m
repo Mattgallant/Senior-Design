@@ -29,4 +29,5 @@ function [sourceCharacters,sendableBits] = text_to_bitstream(filePointer,numberO
             sendableBits(i)=0;
         end        
     end
+    fclose(filePointer);
 end

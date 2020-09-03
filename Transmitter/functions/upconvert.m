@@ -18,11 +18,11 @@ function [upconverted_wave] = upconvert(wave)
 %     title('Carrier Wave');
 %     zoom xon;
 %     
-%     figure(2);
-%     plot(t,wave.*carrier);
-%     xlabel('time (in seconds)');
-%     title('Carrier Wave Modulated');
-%     zoom xon;
+    figure(2);
+    plot(t,wave.*carrier);
+    xlabel('time (in seconds)');
+    title('Carrier Wave Modulated w/ Data');
+    zoom xon;
     upconverted_wave = wave.* carrier;
 end
 
