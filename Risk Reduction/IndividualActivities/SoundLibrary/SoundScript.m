@@ -5,31 +5,31 @@
 recObj = audiorecorder; 
 
 %% Record Audio
-disp('Start Speaking.')
-recordblocking(recObj, 3);          %Start a recording block of 1 seconds long, holds control until done
-disp('End of Recording.');
-
-%% Convert to data array
-y = getaudiodata(recObj);           %Double as default
-x = getaudiodata(recObj, 'uint8');
-b = de2bi(x);                       %Convert to binary
-b = reshape(b,1,[]);
-
-%% Plot and play the sound data
-play(recObj);                       %Play the recorded audio
-
-figure(1)
-plot(y);                            %Plot the double data
-
-figure(2);
-plot(x);
-
-figure(3);                          %Plot the binary data
-plot(b);
-axis([0 500 0 1.05])
-title("Binary Values");
-
-disp(b)
+% disp('Start Speaking.')
+% recordblocking(recObj, 3);          %Start a recording block of 1 seconds long, holds control until done
+% disp('End of Recording.');
+% 
+% %% Convert to data array
+% y = getaudiodata(recObj);           %Double as default
+% x = getaudiodata(recObj, 'uint8');
+% b = de2bi(x);                       %Convert to binary
+% b = reshape(b,1,[]);
+% 
+% %% Plot and play the sound data
+% play(recObj);                       %Play the recorded audio
+% 
+% figure(1)
+% plot(y);                            %Plot the double data
+% 
+% figure(2);
+% plot(x);
+% 
+% figure(3);                          %Plot the binary data
+% plot(b);
+% axis([0 500 0 1.05])
+% title("Binary Values");
+% 
+% disp(b)
 
 %% Outputting a sine wave as sound with freq of 9kHz and Sampling 44.1kHz
 Fs = 44100;                             % Sampling Frequency of 44.1kHz
