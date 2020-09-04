@@ -1,7 +1,6 @@
-function [outputArg1,outputArg2] = golay_injection(inputArg1,inputArg2)
-%GOLAY_INJECTION Summary of this function goes here
-%   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+function [data_in, training_sequence] = golay_injection(modulatedSignal, sequence_length)
+    [Ga,~] = wlanGolaySequence(sequence_length);
+    training_sequence = reshape(Ga, [1,sequence_length]);
+    data_in = [training_sequence modulatedSignal];
 end
 
