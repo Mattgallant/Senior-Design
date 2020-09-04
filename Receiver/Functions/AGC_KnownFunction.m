@@ -1,4 +1,4 @@
-%-----AGC_Known_Function------
+%-----AGC_KnownFunction------
 %Stabilizes the amplitude of a received signal given that he original is
 %known
 %Inputs:    r - the signal to be equalized
