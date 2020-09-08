@@ -34,7 +34,7 @@
     %demodulatedBits =  Demodulation(BPSKSignal);
 
 %% Turbo Decoding (Joseph)
-% TurboDecoding()
+decoded_bits = TurboDecoding(demodulatedBits);
 
 %% Convert Bits to Text (Jaino)
 % Bitstream_to_Text()
