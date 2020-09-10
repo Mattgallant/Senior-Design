@@ -9,6 +9,7 @@ function [outSig,phaseErr] = CarrierFrequencyOffset(receivedSig)
 
 % Carrier synchronizer System object for correcting the phase and frequency
 % offsets with samples per symbol set to 1
+% Change QPSK field depending on what modulation is chosen
 carrierSync = comm.CarrierSynchronizer( ...
 'SamplesPerSymbol',1,'Modulation','QPSK');
 % Correct phase/freq offset
