@@ -1,9 +1,18 @@
-%%%%%%%%%%%%%%%TODO%%%%%%%%%%%%%%%
+function [outSig,phaseErr] = CarrierFrequencyOffset(receivedSig)
 
-function [outputArg1,outputArg2] = CarrierFrequencyOffset(inputArg1,inputArg2)
-%CARRIERFREQUENCYOFFSET Summary of this function goes here
-%   Detailed explanation goes here
-outputArg1 = inputArg1;
-outputArg2 = inputArg2;
+% CARRIERFREQUENCYOFFSET Corrects the frequency of the received wave to the
+% original frequency of the transmitted wave
+
+% receivedSig should be the receieved signal that has AWGN and phase offset
+% applied to it
+
+
+% Carrier synchronizer System object for correcting the phase and frequency
+% offsets with samples per symbol set to 1
+carrierSync = comm.CarrierSynchronizer( ...
+'SamplesPerSymbol',1,'Modulation','QPSK');
+% Correct phase/freq offset
+[outSig,phaseErr] = carrierSync(receivedSig);
+
 end
 
