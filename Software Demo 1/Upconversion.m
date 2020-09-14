@@ -1,8 +1,7 @@
-function [upconverted_wave] = upconvert(wave)
-%UPCONVERT Takes WAVE and upconverts it to desired carrier frequency
-%   Takes SRRC filtered digital signal (WAVE) and multiplies it by an
-%   appropriate carrier wave. The upconverted wave should be a sine wave
-%   and have center frequency of 9kHz. Returns the UPCONVERTED_WAVE.
+% Script to demonstrate that Upconversion is correctly outputting a carrier
+% wave at the correct frequency without any modulated data added.
+    wave = randi([0, 1], 30000, 1);
+
     center_frequency = 9000;    % As per project definition, center freq 9kHz
     Fs = 44100;                 % Sampling Frequency of 44.1kHz (Samples per Second)
     dt = 1/Fs;                  % Seconds per sample
@@ -18,11 +17,8 @@ function [upconverted_wave] = upconvert(wave)
     title('Carrier Wave');
     zoom xon;
     
-    figure(2);
-    plot(t,wave.*carrier);
-    xlabel('time (in seconds)');
-    title('Carrier Wave Modulated w/ Data');
-    zoom xon;
-    upconverted_wave = wave.* carrier;
-end
-
+    % Play wave
+    Fs = 44100;                    % Sampling Frequency of 44.1kHz
+    disp("SOUND PLAYING");
+    sound(carrier, Fs)                % Produce WAVE as sound
+    
