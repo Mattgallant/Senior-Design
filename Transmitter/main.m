@@ -4,13 +4,15 @@
 
 %% Input Data (Text File, String)
     file_pointer= fopen("lorem.txt"); %Open file to read from
-    read_length = 20000;
+    read_length_characters = 10;
 
 %% Bitstream Conversion (Jaino)
 % text_to_bitstream
-    [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length);
+    [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
     %disp(sendable_bits) %Currently a row vector
     %disp(source_characters)
+    [text] = bitstream_to_text(sendable_bits);
+   
 
 %% Channel Encoding (Joseph) 
 % turbo_encoding
