@@ -3,7 +3,7 @@ close all
 clc
 clear
 
-n = 500; % Length of message
+n = 1000; % Length of message
 msg = randi([0,1],n,1); % Random message of bits
 bpskMod = comm.BPSKModulator;   % BPSK mod object
 bpskMod.PhaseOffset = pi/4;    % Set phase offset
