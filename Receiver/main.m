@@ -1,6 +1,13 @@
 % main script for the receiver. All receiver functions should be
 % plugged into this file.
+% Subteam: Joseph, Austin, Phat & Carolyn
 
+%% Initialization
+    % Known golay training sequence we are working with
+    sequence_length = 128; % Length established in main transmitter script
+    [Ga,~] = wlanGolaySequence(sequence_length);
+    trainingSequence = reshape(Ga, [1,sequence_length]);
+    
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
     binary_input = Mic_to_Receiver(5); % Record for 5 seconds
@@ -8,12 +15,15 @@
 
 %% Training sequence detection (Carolyn)
 % GolayDetection()
-
+    [retrieved_sequence, retrieved_data] = GolayDetection(binary_input, sequence_length, trainingSequence);
+    
 %% Timing Offset (Phat) - TBD after detection implementation
 % TimingOffset() 
+% **Timing Offset is resolved through training sequence detection**
 
 %% Carrier Frequency Offset (Austin)
 % CarrierFrequencyOffset()
+[receivedSignal,phaseErr] = CarrierFrequencyOffset(retrieved_data);
 
 %% Automatic Gain Control (Phat) - current method relies on training sequence
 % AGC_KnownFunction(signal to be equalized, known signal)
