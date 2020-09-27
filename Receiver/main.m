@@ -37,7 +37,16 @@
 % ChannelEqualization()
 
 %% Matched Filter (Neel)
-% MatchedFilter
+% MatchedFilter - takes in: equalized_signal as the result of the previous
+% module 
+
+%Filter properties - Make sure these match transmitter values 
+oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
+span = 10; % Filter length in symbols
+rolloff = .1; % Filter rolloff factor
+dataRate = 500; %Data Rate in symbols/sec
+    
+[match_filtered_signal] = srrc_filter(equalized_signal,span,rolloff,oversampling_factor,dataRate);
 
 %% Demodulation (Jaino)
 % Demodulation()
