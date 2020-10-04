@@ -30,11 +30,9 @@
     %estimatedGain = AGC_KnownFunction(receivedSignal, trainingSequence);
     %gainCorrectedSignal = receivedSignal/estimatedGain;
 
-%% Channel Estimation (Jaino)
-% ChannelEstimation()
-
-%% Channel Equalization (Joseph)
+%% Channel Estimation and Equalization (Joseph)
 % ChannelEqualization()
+   %[equalized_signal,~] = ChannelEqualization(gainCorrectedSignal,trainingSequence);
 
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
