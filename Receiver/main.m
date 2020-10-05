@@ -10,8 +10,8 @@
     
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-    binary_input = Mic_to_Receiver(5); % Record for 5 seconds
-    disp(binary_input)
+    binary_input = Mic_to_Receiver(1); % Record for 5 seconds
+%     disp(binary_input)
 
 %% Training sequence detection (Carolyn)
 % GolayDetection()
@@ -32,7 +32,7 @@
 
 %% Channel Estimation and Equalization (Joseph)
 % ChannelEqualization()
-   [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal,trainingSequence);
+   [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal',trainingSequence);
 
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
