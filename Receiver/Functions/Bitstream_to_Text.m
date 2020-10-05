@@ -3,7 +3,7 @@
 %   Function takes in the bitstream
 %   and converts it to a text file
 
-function [textValues] = bitstream_to_text(bitstream)
+function [textValues] = Bitstream_to_Text(bitstream)
     reshapedArray = reshape(bitstream(:), 7, []).';  
     binaryCharArray= num2str(reshapedArray);
     decimalAsciiValues = bin2dec(binaryCharArray);

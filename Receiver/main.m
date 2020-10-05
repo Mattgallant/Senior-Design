@@ -23,20 +23,20 @@
 
 %% Carrier Frequency Offset (Austin)
 % CarrierFrequencyOffset()
-[receivedSignal,phaseErr] = CarrierFrequencyOffset(retrieved_data);
+[receivedSignal] = CarrierFrequencyOffset(double(retrieved_data));
 
 %% Automatic Gain Control (Phat) - current method relies on training sequence
 % AGC_KnownFunction(signal to be equalized, known signal)
-    %estimatedGain = AGC_KnownFunction(receivedSignal, trainingSequence);
-    %gainCorrectedSignal = receivedSignal/estimatedGain;
+    estimatedGain = AGC_KnownFunction(receivedSignal, trainingSequence);
+    gainCorrectedSignal = receivedSignal./estimatedGain;
 
 %% Channel Estimation and Equalization (Joseph)
 % ChannelEqualization()
-   %[equalized_signal,~] = ChannelEqualization(gainCorrectedSignal,trainingSequence);
+   [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal,trainingSequence);
 
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
-% module 
+% module
 
 %Filter properties - Make sure these match transmitter values 
 oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
@@ -47,14 +47,15 @@ dataRate = 500; %Data Rate in symbols/sec
 [match_filtered_signal] = srrc_filter(equalized_signal,span,rolloff,oversampling_factor,dataRate);
 
 %% Demodulation (Jaino)
-% Demodulation()
-    %demodulatedBits =  Demodulation(BPSKSignal);
+demodulatedBits =  Demodulation(match_filtered_signal);
 
 %% Turbo Decoding (Joseph)
 decoded_bits = TurboDecoding(demodulatedBits);
 
 %% Convert Bits to Text (Jaino)
 % Bitstream_to_Text()
+text = Bitstream_to_Text(decoded_bits);
+disp(text)
 
 %% Bit Error Rate Calculations
 % BER_Calculations - function or part of script?

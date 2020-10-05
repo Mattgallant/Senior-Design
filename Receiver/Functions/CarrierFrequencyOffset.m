@@ -1,4 +1,4 @@
-function [outSig,phaseErr] = CarrierFrequencyOffset(receivedSig)
+function [outSig] = CarrierFrequencyOffset(receivedSig)
 
 % CARRIERFREQUENCYOFFSET Corrects the frequency of the received wave to the
 % original frequency of the transmitted wave
@@ -13,7 +13,8 @@ function [outSig,phaseErr] = CarrierFrequencyOffset(receivedSig)
 carrierSync = comm.CarrierSynchronizer( ...
 'SamplesPerSymbol',1,'Modulation','BPSK');
 % Correct phase/freq offset
-[outSig,phaseErr] = carrierSync(receivedSig);
+receivedSig = receivedSig';
+[outSig,~] = carrierSync(receivedSig);
 
 end
 
