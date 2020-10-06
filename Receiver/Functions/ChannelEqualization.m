@@ -1,31 +1,24 @@
 %%%%%%%%%%%%%%%TODO%%%%%%%%%%%%%%%
 
-function [y,err] = ChannelEqualization(recieved_signal,trainingSymbols)
-    % May need to make the training symbols complex in order to concatonate
-    % them with the recieved signal
-    trainingSymbols = complex(trainingSymbols');
+function [y,err] = ChannelEqualization(recieved_signal, received_sequence, trainingSymbols)
     
-    %Initialize the Equalizer object, to tune it, change the taps integers
-    %dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS',...
-        %'NumForwardTaps',5,'NumFeedbackTaps',4,...
-        %'Constellation',bpsk((0:1)'),'ReferenceTap',3,'StepSize',0.01);
-        
+    %Initialize the Equalizer object, to tune it, change the taps integers      
     dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS',...
         'NumForwardTaps',5,'NumFeedbackTaps',4,...
         'Constellation',pskmod((0:1)',2,0),'ReferenceTap',3,'StepSize',0.01);
     
+    trainingSymbols = complex(trainingSymbols');
+    packet = [received_sequence;recieved_signal];
+    packet = packet(:);
+    
     % Determines how many times you want to tune the equalizer
-    numPkts = 10;
+    numPkts = 1;
     for ii = 1:numPkts
-        % Concatonate the training symbols with the received signal
-        %recieved_signal = recieved_signal';
-        trainingSymbols = trainingSymbols';
-        packet = [trainingSymbols;recieved_signal];
         % Attempt to equalize by passing the concatoned signal and the
         % training symbols to the DecisionFeedbackEqualizer object
         [y_train,err_train] = dfeq(packet,trainingSymbols);
     end
     % y is the equalized signal, err is the error in the signal
-    [y,err] = dfeq(rx,trainingSymbols);
+    [y,err] = dfeq(packet,trainingSymbols);
 end
 

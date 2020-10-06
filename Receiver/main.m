@@ -24,15 +24,17 @@
 %% Carrier Frequency Offset (Austin)
 % CarrierFrequencyOffset()
 [receivedSignal] = CarrierFrequencyOffset(double(retrieved_data));
+[receivedSequence] = CarrierFrequencyOffset(double(retrieved_sequence));
 
 %% Automatic Gain Control (Phat) - current method relies on training sequence
 % AGC_KnownFunction(signal to be equalized, known signal)
     estimatedGain = AGC_KnownFunction(receivedSignal, trainingSequence);
     gainCorrectedSignal = receivedSignal./estimatedGain;
+    gainCorrectedSequence = receivedSequence./estimatedGain;
 
 %% Channel Estimation and Equalization (Joseph)
 % ChannelEqualization()
-   [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal',trainingSequence);
+   [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal, gainCorrectedSequence, trainingSequence);
 
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
