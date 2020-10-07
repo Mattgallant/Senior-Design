@@ -3,7 +3,7 @@
 % Subteam: Joseph, Austin, Phat & Carolyn
 
 %% Initialization
-    % Known golay training sequence we are working with
+% Known golay training sequence we are working with
     sequence_length = 128; % Length established in main transmitter script
     [Ga,~] = wlanGolaySequence(sequence_length);
     trainingSequence = reshape(Ga, [1,sequence_length]);
@@ -11,7 +11,7 @@
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
     binary_input = Mic_to_Receiver(1); % Record for 5 seconds
-%     disp(binary_input)
+    disp("Recorded : " + length(binary_input) + " bits")
 
 %% Training sequence detection (Carolyn)
 % GolayDetection()
@@ -52,12 +52,14 @@ dataRate = 500; %Data Rate in symbols/sec
 demodulatedBits =  Demodulation(match_filtered_signal);
 
 %% Turbo Decoding (Joseph)
-decoded_bits = TurboDecoding(demodulatedBits);
+decoded_bits = TurboDecoding(demodulatedBits.');
 
 %% Convert Bits to Text (Jaino)
 % Bitstream_to_Text()
-text = Bitstream_to_Text(decoded_bits);
+text = Bitstream_to_Text(decoded_bits.');
 disp(text)
 
 %% Bit Error Rate Calculations
 % BER_Calculations - function or part of script?
+[number, ratio] = biterr(sendable_bits(:), decoded_bits);
+disp(number);

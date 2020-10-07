@@ -11,7 +11,6 @@
     [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
     [text] = bitstream_to_text(sendable_bits);
    
-
 %% Channel Encoding (Joseph) 
 % turbo_encoding
    encoded_bits = turbo_encoding(sendable_bits.');
