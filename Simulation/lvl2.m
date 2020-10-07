@@ -12,9 +12,12 @@ read_length_characters = 2000;
 
 [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
 
+length(sendable_bits)
+
 %  Channel Encoding
 
 encoded_bits = turbo_encoding(sendable_bits.');
+
 
 %  Constellation Mapping
 
@@ -28,6 +31,8 @@ rolloff = .1;
 dataRate = 500; 
 [pulse_shaped_signal] = srrc_filter(modulated_bits,span,rolloff,oversampling_factor,dataRate);
 
+
+
 %% Channel
 
 
@@ -35,7 +40,7 @@ dataRate = 500;
 
 %  Match (SRRC) Filtering (NOT WORKING)
 
-[match_filtered_signal] = srrc_filter(pulse_shaped_signal,span,rolloff,oversampling_factor,dataRate);
+[match_filtered_signal] = MatchedFilter(pulse_shaped_signal,span,rolloff,oversampling_factor,dataRate);
 length(match_filtered_signal)
 %  Constellation DeMapping
 
@@ -46,9 +51,10 @@ demodulated_bits = demodulated_bits(:);
 
 decoded_bits = TurboDecoding(demodulated_bits);
 
+length(decoded_bits)
 %  Bitstream-To-TXT
 
-text = Bitstream_to_Text(decoded_bits);
+%text = Bitstream_to_Text(decoded_bits);
 
 %% Analysis
 

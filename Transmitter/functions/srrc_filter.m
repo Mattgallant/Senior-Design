@@ -11,10 +11,10 @@ function [yc] = srrc_filter(b_data,nysm,beta,samplesPerSymbol,dataRate)
     Fs = dataRate * samplesPerSymbol;
 
     %Filter Bipolar Data with Upsampling
-    y = upfirdn(b_data,srrc,samplesPerSymbol);
+    yc = upfirdn(b_data,srrc,samplesPerSymbol);
 
     %Correct for propagation delay
-    yc = y(filter_delay*Fs + 1:end);
+    %yc = y(filter_delay*Fs + 1:end);
 
     %t = 1000 * (0:length(b_data)*samplesPerSymbol-1) / Fc;
 end
