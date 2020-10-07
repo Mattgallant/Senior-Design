@@ -4,7 +4,7 @@
 
 %% Input Data (Text File, String)
     file_pointer= fopen("lorem.txt");   %Open file to read from
-    read_length_characters = 2000;
+    read_length_characters = 200;
 
 %% Bitstream Conversion (Jaino)
 % text_to_bitstream
@@ -39,7 +39,7 @@
     rolloff = .1; % Filter rolloff factor
     dataRate = 500; %Data Rate in symbols/sec
     [pulse_shaped_signal] = srrc_filter(bitstream_with_injection,span,rolloff,oversampling_factor,dataRate);
-
+    
 %% Upconversion (Matt)
 % upconvert
     upconverted_wave = upconvert(real(pulse_shaped_signal));
