@@ -4,14 +4,13 @@
 
 %% Input Data (Text File, String)
     file_pointer= fopen("lorem.txt");   %Open file to read from
-    read_length_characters = 2000;
+    read_length_characters = 200;
 
 %% Bitstream Conversion (Jaino)
 % text_to_bitstream
     [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
     [text] = bitstream_to_text(sendable_bits);
    
-
 %% Channel Encoding (Joseph) 
 % turbo_encoding
    encoded_bits = turbo_encoding(sendable_bits.');
@@ -40,7 +39,7 @@
     rolloff = .1; % Filter rolloff factor
     dataRate = 500; %Data Rate in symbols/sec
     [pulse_shaped_signal] = srrc_filter(bitstream_with_injection,span,rolloff,oversampling_factor,dataRate);
-
+    
 %% Upconversion (Matt)
 % upconvert
     upconverted_wave = upconvert(real(pulse_shaped_signal));

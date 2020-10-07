@@ -4,7 +4,7 @@ function [received_binary] = Mic_to_Receiver(seconds)
 %   for. Recall the sampling rate is 44100 samples per second, so it will
 %   take 1 second for every 44100 samples of data. 
 %   Not too sure how to sure how to handle choosing how long to record as of now -Matt
-    %% Create an audiorecorder object w/ Fs =44.1kHz, 8 bits per sample, 1 bits per sample, 1 channel.
+    %% Create an audiorecorder object w/ Fs =44.1kHz, 8 bits per sample, 1 channel.
     recObj = audiorecorder(44100,8,1); % THE 8 HERE MAY BE WRONG
 
     %% Record Audio
