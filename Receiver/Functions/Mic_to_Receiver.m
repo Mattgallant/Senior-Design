@@ -14,7 +14,7 @@ function [received_binary] = Mic_to_Receiver(seconds)
 
     %% Convert to data array
     y = getaudiodata(recObj);           %Double as default
-    x = getaudiodata(recObj, 'uint8');
+    x = getaudiodata(recObj, 'int8');
     b = de2bi(x);                       %Convert to binary
     received_binary = reshape(b,1,[]);
 
