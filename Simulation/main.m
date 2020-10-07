@@ -88,3 +88,4 @@ scatterplot(received_signal);
 title('Received Signal after all Channel')
 
 %% RECEIVER ---------------------------------------------------------------
+
