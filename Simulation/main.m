@@ -94,9 +94,21 @@
     [Ga,~] = wlanGolaySequence(sequence_length);
     trainingSequence = reshape(Ga, [1,sequence_length]);
     
+%% Matched Filter (Neel)
+% MatchedFilter - takes in: equalized_signal as the result of the previous
+% module
+
+%Filter properties - Make sure these match transmitter values 
+oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
+span = 10; % Filter length in symbols
+rolloff = .1; % Filter rolloff factor
+dataRate = 500; %Data Rate in symbols/sec
+    
+[match_filtered_signal] = srrc_filter(pulse_shaped_signal,span,rolloff,oversampling_factor,dataRate);
+    
 %% Training sequence detection (Carolyn)
 % GolayDetection()
-    [retrieved_sequence, retrieved_data] = GolayDetection(upconverted_wave, sequence_length, trainingSequence);
+    [retrieved_sequence, retrieved_data] = GolayDetection(match_filtered_signal, sequence_length, trainingSequence);
     
 %% Timing Offset (Phat) - TBD after detection implementation
 % TimingOffset() 
@@ -116,18 +128,6 @@
 %% Channel Estimation and Equalization (Joseph)
 % ChannelEqualization()
    [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal, gainCorrectedSequence, trainingSequence);
-
-%% Matched Filter (Neel)
-% MatchedFilter - takes in: equalized_signal as the result of the previous
-% module
-
-%Filter properties - Make sure these match transmitter values 
-oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
-span = 10; % Filter length in symbols
-rolloff = .1; % Filter rolloff factor
-dataRate = 500; %Data Rate in symbols/sec
-    
-[match_filtered_signal] = srrc_filter(equalized_signal,span,rolloff,oversampling_factor,dataRate);
 
 %% Demodulation (Jaino)
 demodulatedBits =  Demodulation(match_filtered_signal);
