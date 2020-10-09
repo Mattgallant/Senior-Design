@@ -39,13 +39,18 @@
     dataRate = 500; %Data Rate in symbols/sec
    %[pulse_shaped_signal] = srrc_filter(bitstream_with_injection,span,rolloff,oversampling_factor,dataRate);
 %Design SRRC filter, (optinal) visualize impulse response
+
+upsample = zeros(1, length(bitstream_with_injection) * oversampling_factor);
+upsample(1:oversampling_factor: length(bitstream_with_injection) * oversampling_factor) = bitstream_with_injection;
+
 srrc = rcosdesign(rolloff,span,oversampling_factor,'sqrt');
 %Normalize filter
 srrc = srrc * 1/max(srrc);
-y = filter(srrc,1,bitstream_with_injection);
+
+y = srrc_filter(bitstream_with_injection,span,rolloff,oversampling_factor,dataRate);%filter(srrc,1,upsample);
 pulse_shaped_signal = y;
    
-%% Upconversion (Matt) -- demodulation works but peak isn't as clear
+%% Upconversion (Matt) -- downconvert works but peak isn't as clear
 % upconvert
     %wave = randi(10, 1, 5*44100);       % For testing purposes
     %upconverted_wave = upconvert(real(pulse_shaped_signal));
@@ -78,9 +83,14 @@ frequency_offset_wave = pfo(upconverted_wave);                    % Add frequenc
 distorted_wave = filter(channel_coeffs,1,frequency_offset_wave);  % Add channel distortion (multipath interference)
 received_signal = awgn(distorted_wave,snr);                       % Add white noise
 
+%just bitstream through channel
+release(pfo);
+frequency_offset_wave_c = pfo(bitstream_with_injection);                    % Add frequency/phase offset
+distorted_wave_c = filter(channel_coeffs,1,frequency_offset_wave_c);  % Add channel distortion (multipath interference)
+received_signal_c = awgn(distorted_wave_c,snr);   
 
 %% RECEIVER ---------------------------------------------------------------
-%demodulation
+%downconvert
 fc = 9000;    % As per project definition, center freq 9kHz
 numSamples = length(received_signal);
 n = 1 : numSamples;
@@ -92,14 +102,32 @@ x2 = 2 * (received_signal .* c2);     %downconvert and * 2 for scaling
 fl=floor(50);                         % LPF length
 fbe=[0 0.1 0.2 1]; damps=[1 1 0 0 ];  % design of LPF parameters
 b=firpm(fl,fbe,damps);                % calculation of LPF impulse response
-data=2*filter(b,1,x2);                  % LPF and scale downconverted signal
+filtered=2*filter(b,1,x2);                  % LPF and scale downconverted signal
 
+%matched filter
+y = MatchedFilter(filtered,span,rolloff,oversampling_factor,dataRate);%filter(srrc,1,filtered);
+%Correct for propagation delay;
+data = y;
 
+%data = matched(1:oversampling_factor: length(bitstream_with_injection) * oversampling_factor);
 %detection
-y=xcorr(training_sequence, data);
+y= conv(data, fliplr(training_sequence));%xcorr(training_sequence, data);
+yclean = conv(received_signal_c, fliplr(training_sequence));%xcorr(training_sequence, received_signal_c);
 figure;
 stem(y);                            %detection works if graph shows an obvious peak
 title('Detection Stem');
+figure;
+stem(yclean);
+title('detection without upconversion/srrc');
+
+figure;
+stem(training_sequence);
+title('training sequence');
+figure;
+stem(data(1:200));
+title('through upconversion/srrc');
+figure;
+stem(received_signal_c(1:200));
 
 figure;
 plotspec(pulse_shaped_signal, Ts);
@@ -108,5 +136,5 @@ figure;
 plotspec(upconverted_wave, Ts);
 title('signal after modulation');
 figure;
-plotspec(data, Ts);
+plotspec(filtered, Ts);
 title('signal after demodulation (still has noise)');
