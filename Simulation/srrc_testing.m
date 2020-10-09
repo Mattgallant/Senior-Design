@@ -3,9 +3,9 @@ span = 10;
 sps = 6;
 M = 16;
 k = log2(M);
-pktlen = 2000;
+pktlen = 14000;
 
-rrcFilter = rcosdesign(rolloff, span, sps);
+rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
 
 data = randi([0 1],pktlen, 1);
 
