@@ -6,7 +6,7 @@
 %  Input Data
 
 file_pointer= fopen("lorem.txt"); 
-read_length_characters = 2000; 
+read_length_characters = 2001; 
 
 %  TXT-To-Bitstream
 
@@ -18,29 +18,39 @@ length(sendable_bits)
 
 encoded_bits = turbo_encoding(sendable_bits.');
 
-
+length(encoded_bits);
 %  Constellation Mapping
 
 modulated_bits = BPSK_mapping(encoded_bits);
 
 %  SRRC Filtering
 
-oversampling_factor = 4; 
-span = 10; 
-rolloff = .1; 
-dataRate = 500; 
-[pulse_shaped_signal] = srrc_filter(modulated_bits,span,rolloff,oversampling_factor,dataRate);
+rolloff = 0.25;
+span = 10;
+sps = 6;
+M = 2;
+k = log2(M);
+
+rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
+
+txSig = upfirdn(modulated_bits, rrcFilter, sps);
 
 
 
 %% Channel
+
+EbNo = 7;
+snr = 10;%EbNo + 10*log10(k) - 10*log10(sps);
+rxSig = awgn(txSig, snr, 'measured');
 
 
 %% Reciever
 
 %  Match (SRRC) Filtering (NOT WORKING)
 
-[match_filtered_signal] = MatchedFilter(pulse_shaped_signal,span,rolloff,oversampling_factor,dataRate);
+rxFilt = upfirdn(rxSig, rrcFilter, 1, sps);
+match_filtered_signal = rxFilt(span+1:end-span);
+
 length(match_filtered_signal)
 %  Constellation DeMapping
 

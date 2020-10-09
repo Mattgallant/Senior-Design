@@ -1,11 +1,11 @@
 rolloff = 0.25;
-span = 6;
-sps = 4;
+span = 10;
+sps = 6;
 M = 16;
 k = log2(M);
-pktlen = 10000;
+pktlen = 14000;
 
-rrcFilter = rcosdesign(rolloff, span, sps);
+rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
 
 data = randi([0 1],pktlen, 1);
 
@@ -14,11 +14,11 @@ turboDec = comm.TurboDecoder('InterleaverIndicesSource','Input port','NumIterati
 
 intrlvrInd = randperm(pktlen);
 
-%encoded_data = turboEnc(data,intrlvrInd);
+encoded_data = turbo_encoding(data);%turboEnc(data,intrlvrInd);
 
 bpskmod = comm.BPSKModulator;
 bpskdemod = comm.BPSKDemodulator;
-modData = bpskmod(data);%qammod(encoded_data,M,'InputType','bit','UnitAveragePower',true);
+modData = bpskmod(encoded_data);%qammod(encoded_data,M,'InputType','bit','UnitAveragePower',true);
 
 txSig = upfirdn(modData, rrcFilter, sps);
 
@@ -29,11 +29,11 @@ txSig = upfirdn(modData, rrcFilter, sps);
 rxFilt = upfirdn(txSig, rrcFilter, 1, sps);
 rxFilt = rxFilt(span+1:end-span);
 
-unmodData = bpskdemod(modData);%qamdemod(modData,M,'UnitAveragePower',true,'OutputType','bit');
+unmodData = bpskdemod(rxFilt);%qamdemod(modData,M,'UnitAveragePower',true,'OutputType','bit');
 
-%decoded_data = turboDec(unmodData,intrlvrInd);
+decoded_data = TurboDecoding(unmodData);%turboDec(unmodData,intrlvrInd);
 
-%length(decoded_data)
+length(decoded_data)
 
-[number, ratio] = biterr(data, unmodData);
+[number, ratio] = biterr(data, decoded_data);
 disp(number);
