@@ -5,7 +5,7 @@
 %% TRANSMITTER ------------------------------------------------------------
 %% Input Data (Text File, String)
     file_pointer= fopen("lorem.txt"); %Open file to read from
-    read_length_characters = 2000; % DO NOT CHANGE THIS FOR NOW, INTERLEAVER INDICIES NEEDS 2000
+    read_length_characters = 200; % DO NOT CHANGE THIS FOR NOW, INTERLEAVER INDICIES NEEDS 2000
 
 %% Bitstream Conversion (Jaino)
 % text_to_bitstream
@@ -65,27 +65,88 @@
 % Apply noise, distortion and frequency offset
 
 % Defining variables and objects for channel simulation
-pfo = comm.PhaseFrequencyOffset('PhaseOffset',45,'FrequencyOffset',1e6);
-snr = 10;    % Signal-to-Noise Ratio
-channel_coeffs=[0.5 1 -0.6 .2i];              
-
-% Applying channel effects
-frequency_offset_wave = pfo(upconverted_wave);                    % Add frequency/phase offset
-distorted_wave = filter(channel_coeffs,1,frequency_offset_wave);  % Add channel distortion (multipath interference)
-received_signal = awgn(distorted_wave,snr);                       % Add white noise
-
-% Plot
-scatterplot(upconverted_wave)
-title('Signal before the channel')
-
-scatterplot(frequency_offset_wave)
-title('Signal after frequency offset')
-
-scatterplot(distorted_wave)
-title('Signal after channel distortion')
-
-scatterplot(received_signal);
-title('Received Signal after all Channel')
+% pfo = comm.PhaseFrequencyOffset('PhaseOffset',45,'FrequencyOffset',1e6);
+% snr = 10;    % Signal-to-Noise Ratio
+% channel_coeffs=[0.5 1 -0.6 .2i];              
+% 
+% % Applying channel effects
+% frequency_offset_wave = pfo(upconverted_wave);                    % Add frequency/phase offset
+% distorted_wave = filter(channel_coeffs,1,frequency_offset_wave);  % Add channel distortion (multipath interference)
+% received_signal = awgn(distorted_wave,snr);                       % Add white noise
+% 
+% % Plot
+% scatterplot(upconverted_wave)
+% title('Signal before the channel')
+% 
+% scatterplot(frequency_offset_wave)
+% title('Signal after frequency offset')
+% 
+% scatterplot(distorted_wave)
+% title('Signal after channel distortion')
+% 
+% scatterplot(received_signal);
+% title('Received Signal after all Channel')
 
 %% RECEIVER ---------------------------------------------------------------
+%% Initialization
+% Known golay training sequence we are working with
+    sequence_length = 128; % Length established in main transmitter script
+    [Ga,~] = wlanGolaySequence(sequence_length);
+    trainingSequence = reshape(Ga, [1,sequence_length]);
+    
+%% Matched Filter (Neel)
+% MatchedFilter - takes in: equalized_signal as the result of the previous
+% module
 
+%Filter properties - Make sure these match transmitter values 
+oversampling_factor = 4; % Number of samples per symbol (oversampling factor)
+span = 10; % Filter length in symbols
+rolloff = .1; % Filter rolloff factor
+dataRate = 500; %Data Rate in symbols/sec
+    
+[match_filtered_signal] = srrc_filter(pulse_shaped_signal,span,rolloff,oversampling_factor,dataRate);
+    
+%% Training sequence detection (Carolyn)
+% GolayDetection()
+    [retrieved_sequence, retrieved_data] = GolayDetection(match_filtered_signal, sequence_length, trainingSequence);
+    
+%% Timing Offset (Phat) - TBD after detection implementation
+% TimingOffset() 
+% **Timing Offset is resolved through training sequence detection**
+
+%% Carrier Frequency Offset (Austin)
+% CarrierFrequencyOffset()
+[receivedSignal] = CarrierFrequencyOffset(double(retrieved_data));
+[receivedSequence] = CarrierFrequencyOffset(double(retrieved_sequence));
+
+%% Automatic Gain Control (Phat) - current method relies on training sequence
+% AGC_KnownFunction(signal to be equalized, known signal)
+    estimatedGain = AGC_KnownFunction(receivedSequence.', trainingSequence);
+    gainCorrectedSignal = receivedSignal./estimatedGain;
+    gainCorrectedSequence = receivedSequence./estimatedGain;
+
+%% Channel Estimation and Equalization (Joseph)
+% ChannelEqualization()
+   [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal, gainCorrectedSequence, trainingSequence);
+
+%% Demodulation (Jaino)
+demodulatedBits =  Demodulation(match_filtered_signal);
+
+%% Turbo Decoding (Joseph)
+decoded_bits = TurboDecoding(demodulatedBits.');
+
+%% TEMPORARY/TESTING
+% Need to ensure decoded_bits is multiple of 7, for testing purposes, cut
+% off extra bits to make multiple of 7. If we do every other step before
+% this correctly, we should be getting a multiple of 7 here.
+remainder = mod(length(decoded_bits), 7 );
+decoded_bits = decoded_bits(1:(length(decoded_bits)-remainder), :);
+
+%% Convert Bits to Text (Jaino)
+% Bitstream_to_Text()
+text = Bitstream_to_Text(decoded_bits.');
+disp(text)
+
+%% Bit Error Rate Calculations
+% [number, ratio] = biterr(sendable_bits(:), decoded_bits);
+% disp(number);

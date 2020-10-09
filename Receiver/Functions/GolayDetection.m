@@ -15,8 +15,8 @@ function [retrieved_sequence, retrieved_data] = GolayDetection(data,sequence_len
     [m,ind]=max(y);                        % location of largest correlation
     headstart=length(data)-ind+1;          % place where training sequence starts
 
-    retrieved_sequence = data(headstart : headstart+32);
-    retrieved_data = data(headstart+33 : end);
+    retrieved_sequence = data(headstart : headstart+127);
+    retrieved_data = data(headstart+128 : end);
 
 end
 

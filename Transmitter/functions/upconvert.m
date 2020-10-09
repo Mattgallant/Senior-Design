@@ -12,11 +12,11 @@ function [upconverted_wave] = upconvert(wave)
     w = 2*pi*center_frequency;      % Radian value to create 9kHz
     carrier = sin(w*t);             % Create carrier sinewave
     
-    figure(1);
-    plot(t,carrier);
-    xlabel('time (in seconds)');
-    title('Carrier Wave');
-    zoom xon;
+%     figure(1);
+%     plot(t,carrier);
+%     xlabel('time (in seconds)');
+%     title('Carrier Wave');
+%     zoom xon;
     
     figure(2);
     plot(t,wave.*carrier);
