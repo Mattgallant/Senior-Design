@@ -1,4 +1,4 @@
-function [retrieved_sequence, retrieved_data] = GolayDetection(data,sequence_length, training_sequence)
+function [retrieved_sequence, retrieved_data] = GolayDetection(data, sequence_length, training_sequence)
 %GOLAYDETECTION Summary of this function goes here
 %Detailed explanation goes here
     %Option 1: This was used in the risk reduction. We pulled the bits from
@@ -12,11 +12,11 @@ function [retrieved_sequence, retrieved_data] = GolayDetection(data,sequence_len
     [~,ind]=max(y);                        % location of largest correlation
     headstart=length(data)-ind+1;          % place where training sequence starts
 
-    retrieved_sequence = data(headstart : headstart+127);
-    retrieved_data = data(headstart+128 : end);
+    retrieved_sequence = data(headstart : headstart+sequence_length-1);
+    retrieved_data = data(headstart+sequence_length : end);
     
     figure;
-    plot(y)
+    stem(y)
     title('Training Detection Correlation');
     xlabel('Sample');
     ylabel('Correlation');

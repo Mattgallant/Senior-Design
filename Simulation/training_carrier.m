@@ -8,8 +8,15 @@ Fs = 44100;
 data = randi([0 1],1000, 1);
 [dataWithTraining, trainingSequence] = golay_injection(data.', sequenceLength);
 
+x = load('please.mat');      %done with filter design/fdatool
+dataWithFilter = filter(x.FilterTest, 1, dataWithTraining);  
+
+figure;
+plottf(dataWithFilter,1/Fs);
+title("Downconverted Data w/ LPF")
+
 % Perform upconversion
-upconvertedData = upconvert(dataWithTraining);
+upconvertedData = upconvert(dataWithFilter);
 
 %% Channel
 % snr = -10;
@@ -30,7 +37,7 @@ downconvertedData = downconvert(upconvertedData);
 % title("Downconverted, w/ LPF")
 
 % Detection
-% [receivedSequence, receivedData] = GolayDetection(upconvertedData, sequenceLength, trainingSequence);
+[receivedSequence, receivedData] = GolayDetection(downconvertedData, sequenceLength, trainingSequence);
 
 %% Analysis
 % disp("Variance of the noisy signal is: " + var(rxSig));
@@ -48,5 +55,5 @@ plottf(upconvertedData,1/Fs);
 title("Upconverted Data")
 
 figure;
-plottf(upconvertedData,1/Fs);
-title("Downconverted Data")
+plottf(downconvertedData,1/Fs);
+title("Downconverted Data w/ LPF")

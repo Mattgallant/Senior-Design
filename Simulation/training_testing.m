@@ -14,11 +14,11 @@ dataWithTraining = [randi([0 1],1000, 1).' dataWithTraining];
 
 % Training should now be at 1001-1128
 
-snr = -10;
+snr = 10;
 rxSig = awgn(dataWithTraining, snr);
 
 %% Receiver
-[receivedSequence, receivedData] = GolayDetection(rxSig, sequenceLength, trainingSequence);
+[receivedSequence, receivedData] = GolayDetection(rxSig, trainingSequence);
 
 %% Analysis
 disp("Variance of the noisy signal is: " + var(rxSig));
