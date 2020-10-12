@@ -19,10 +19,11 @@ function [downconverted_wave] = downconvert(wave)
 %     plottf(downconverted_wave,1/Fs);
 %     title("Downconverted Data w/o LPF")
     
-    %LPF ---!!!!!!!!!!!!!!!! currently causing bit error ???
-    % We may not need this since SRRC acts as the LPF?
+    %LPF --- working
     x = load('please.mat');      %done with filter design/fdatool
-downconverted_wave = filter(x.FilterTest, 1, downconverted_wave);                % calculation of LPF impulse response
+    filtered = filter(x.FilterTest, 1, downconverted_wave);                % calculation of LPF impulse response
+    delay = floor((length(x.FilterTest))/2);                               %needs to be integer
+    downconverted_wave = [filtered(delay:end) zeros(1,delay)];             %padded 0s at the end to keep size for now
 %% DEBUG  
 %     figure;
 %     plot(t,wave.*carrier);
