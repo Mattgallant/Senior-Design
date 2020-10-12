@@ -1,6 +1,3 @@
-%%%%%%%%%%%%%%%TODO%%%%%%%%%%%%%%%
-%in risk reduction
-
 function [retrieved_sequence, retrieved_data] = GolayDetection(data,sequence_length, training_sequence)
 %GOLAYDETECTION Summary of this function goes here
 %Detailed explanation goes here
@@ -12,11 +9,18 @@ function [retrieved_sequence, retrieved_data] = GolayDetection(data,sequence_len
     %Option 2: This used correlation to determine where the start of the
     %training sequence begins and pulls it from the determined position
     y=xcorr(training_sequence, data);      % do cross correlation
-    [m,ind]=max(y);                        % location of largest correlation
+    [~,ind]=max(y);                        % location of largest correlation
     headstart=length(data)-ind+1;          % place where training sequence starts
 
     retrieved_sequence = data(headstart : headstart+127);
     retrieved_data = data(headstart+128 : end);
+    
+    figure;
+    plot(y)
+    title('Training Detection Correlation');
+    xlabel('Sample');
+    ylabel('Correlation');
+    
 
 end
 
