@@ -21,8 +21,20 @@ encoded_bits = turbo_encoding(sendable_bits.');
 modulated_bits = BPSK_mapping(encoded_bits);
 
 % Training Sequence Injection (Carolyn)
-[bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
+% [bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
+pnSequence = comm.PNSequence('Polynomial',[7 2 0],'SamplesPerFrame',128,'InitialConditions',[0 0 0 0 0 0 1]);
 
+% Generate the PN training sequence
+training_sequence = pnSequence();
+training_sequence = training_sequence';
+for bit = 1: length(training_sequence)
+   if training_sequence(bit)== 0
+        training_sequence(bit) = -1;
+    end
+end
+% Embed training sequence into bitstream
+embeddedStream = horzcat(training_sequence, modulated_bits);
+    
 %  SRRC Filtering
 rolloff = 0.25;
 span = 10;
@@ -31,7 +43,7 @@ M = 2;
 k = log2(M);
 
 rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
-pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
+pulseShaped = upfirdn(real(embeddedStream), rrcFilter, sps);
 
 %Upconversion
 txSig = upconvert(pulseShaped);
@@ -41,7 +53,7 @@ garbage = [randi([0 1],100000, 1).' txSig];
 EbNo = 15;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-% rxSig = awgn(txSig, snr, 'measured');
+%rxSig = awgn(txSig, snr, 'measured');
 rxSig = garbage;
 %% Reciever
 
