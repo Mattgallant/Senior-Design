@@ -37,12 +37,12 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 
 %% Channel
-garbage = [randi([0 1],100000, 1).' txSig]; 
-EbNo = 15;
+garbage = [randi([0 1],1, 1).' txSig]; 
+EbNo = 10;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-% rxSig = awgn(txSig, snr, 'measured');
-rxSig = garbage;
+rxSig = awgn(garbage, snr, 'measured');
+% rxSig = garbage;
 %% Reciever
 
 %Downconversion
