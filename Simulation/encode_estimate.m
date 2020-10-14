@@ -1,9 +1,9 @@
 %Initialize the Equalizer object, to tune it, change the taps integers
 
 M = 2;
-numTrainSymbols = 128;
-numDataSymbols = 1800;
-SNR = 20;
+numTrainSymbols = 32;
+numDataSymbols = 180;
+SNR = 100;
 rng default;
 
 % Generate Bits
@@ -14,7 +14,6 @@ trellis = poly2trellis(4,[13 15 17],13);
 interleaver_indicies = randperm(length(bits));    
 turboEncoder = comm.TurboEncoder(trellis, interleaver_indicies);
 encoded_bits = turboEncoder(bits);
-disp(length(encoded_bits));
 
 % Modulate to Symbols
 bpskmod = comm.BPSKModulator;
@@ -26,21 +25,21 @@ trainingSymbols = reshape(Ga, [1,numTrainSymbols]);
 trainingSymbols = complex(trainingSymbols');
 
 % Pass through filter (represents transmitting)
-chCo=[0.5 1 -0.6]; 
+chCo=[1 0.1 -0.1]; 
 packet = [trainingSymbols; dataSym];
-disp(size(packet));
 channel = 1;
-rx = filter(chCo,1,packet);
+rx = packet;
+%rx = awgn(packet, 1);
+%rx = filter(chCo,1,packet);
 
 % Channel Estimate
 dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS',...
     'NumForwardTaps',5,'NumFeedbackTaps',4,...
     'Constellation',pskmod((0:1)',2,0),'ReferenceTap',3,'StepSize',0.01);
 
-numPkts = 100;
-[rx_equalized, err] = dfeq(rx,trainingSymbols);
+numPkts = 10;
 for ii = 1:numPkts
-    [rx_equalized, err] = dfeq(rx_equalized,trainingSymbols);
+    [rx_equalized, err] = dfeq(rx,trainingSymbols);
 end
 [rx_equalized, err] = dfeq(rx,trainingSymbols);
 
@@ -61,8 +60,6 @@ rx_bits = turbodec(rx_data);
 error = rx_bits - bits;
 signals = [bits rx_bits error];
 bit_error_rate = nnz(error)/length(bits);
-
-disp(signals);
 
 disp(bit_error_rate);
 
