@@ -8,7 +8,9 @@ function [upconverted_wave] = upconvert(wave)
     dt = 1/Fs;                  % Seconds per sample
     
     % Create the carrier wave
-    t = (0:dt:(length(wave) - 1)/Fs);   % Create time vector for transmition. Recall want 44.1k "samples" per second.
+    M = 6; %sps
+    t=1/M:1/M:length(wave)/M;              % T/M-spaced time vector
+    %t = (0:dt:(length(wave) - 1)/Fs);   % Create time vector for transmition. Recall want 44.1k "samples" per second.
     w = 2*pi*fc;                        % Radian value to create 9kHz
     carrier = cos(w*t);                 % Create carrier sinewave
     
