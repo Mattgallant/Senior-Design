@@ -39,32 +39,33 @@ embeddedStream = horzcat(training_sequence, modulated_bits);
 %  SRRC Filtering
 rolloff = 0.25;
 span = 10;
-sps = 1;
+sps = 6;
 M = 2;
 k = log2(M);
 
 rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
 pulseShaped = upfirdn(real(embeddedStream), rrcFilter, sps);
 
+% figure;
+% plottf(rrcFilter,1/Fs);
+% title("Filter")
+
 %Upconversion
 txSig = upconvert(pulseShaped);
 
-% txSig = pulseShaped;
-
 %% Channel 
-EbNo = 20;
+EbNo = 15;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-
-garbage = [randi([0 1],1000, 1).' txSig];
-rxSig = awgn(garbage, snr, 'measured');
-% rxSig = awgn(txSig, snr, 'measured');
+% 
+% garbage = [randi([0 1],192, 1).' txSig];
+% rxSig = awgn(garbage, snr, 'measured');
+rxSig = awgn(txSig, snr, 'measured');
 % rxSig = garbage;
 %% Reciever
 
 %Downconversion
 downconverted = downconvert(rxSig);
-% downconverted = rxSig;
 
 %  Match (SRRC) Filtering
 rxFilt = upfirdn(downconverted, rrcFilter, 1, sps);
