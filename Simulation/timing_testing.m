@@ -48,12 +48,12 @@ pulseShaped = upfirdn((embeddedStream), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 %txSig = pulseShaped;
 
-scatterplot(txSig);
-title('upconverted tx');
+%scatterplot(txSig);
+%title('upconverted tx');
 
 %% Channel
 %so far timingErr has not been tested much > 2733, working under assumption of similar good/bad numbers
-timingErr = 2733; % Samples of timing error --- jk inconsistent BER with different numbers but 2700 is safe for benchmarking
+timingErr = 2700; % Samples of timing error --- jk inconsistent BER with different numbers but 2700 is safe for benchmarking
 %bad BER inconsistencies have zero_array size > 1
 %example bad timingErr is 131, 2733 is pseudo bad number
 %NOTE: higher SNR /does/ improve BER for some numbers (like 2733), but numbers like 131 stay bad
