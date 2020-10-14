@@ -15,20 +15,20 @@ read_length_characters = 2000;
 encoded_bits = turbo_encoding(sendable_bits.');
 
 %  Constellation Mapping
-modulated_bits = BPSK_mapping(encoded_bits);
+modulated_bits = real(BPSK_mapping(encoded_bits));
 
 % Training Sequence Injection (Carolyn)
-% [bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
-pnSequence = comm.PNSequence('Polynomial',[7 2 0],'SamplesPerFrame',128,'InitialConditions',[0 0 0 0 0 0 1]);
-
-% Generate the PN training sequence
-training_sequence = pnSequence();
-training_sequence = training_sequence';
-for bit = 1: length(training_sequence)
-   if training_sequence(bit)== 0
-        training_sequence(bit) = -1;
-    end
-end
+[bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
+% pnSequence = comm.PNSequence('Polynomial',[7 2 0],'SamplesPerFrame',128,'InitialConditions',[0 0 0 0 0 0 1]);
+% 
+% % Generate the PN training sequence
+% training_sequence = pnSequence();
+% training_sequence = training_sequence';
+% for bit = 1: length(training_sequence)
+%    if training_sequence(bit)== 0
+%         training_sequence(bit) = -1;
+%     end
+% end
 % Embed training sequence into bitstream
 embeddedStream = horzcat(training_sequence, modulated_bits);
 
@@ -42,7 +42,7 @@ M = 2;
 k = log2(M);
 
 rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
-pulseShaped = upfirdn((embeddedStream), rrcFilter, sps);
+pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 
 %Upconversion
 txSig = upconvert(pulseShaped);
@@ -73,8 +73,8 @@ garbage = [zeros(1, timingErr) txSig]; %example delay but no cutting off the end
 EbNo = 15;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-rxSig = awgn(garbage, snr, 'measured');
-%rxSig = garbage;
+% rxSig = awgn(garbage, snr, 'measured');
+rxSig = garbage;
 
 %Downconversion
 downconverted = downconvert(rxSig); %no issues when skipping upconversion and downconversion for the bad numbers

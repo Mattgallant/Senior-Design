@@ -17,9 +17,9 @@ function [downconverted_wave] = downconvert(wave)
     % Remove carrier wave
     downconverted_wave = 2 .*( wave.* carrier);
    
-    figure;
-    plotspec(downconverted_wave,1/Fs);
-    title("Downconverted Data w/o LPF")
+%     figure;
+%     plotspec(downconverted_wave,1/Fs);
+%     title("Downconverted Data w/o LPF")
     
     %LPF --- working
     x = load('please.mat');      %done with filter design/fdatool
