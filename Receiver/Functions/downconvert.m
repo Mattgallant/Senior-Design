@@ -28,7 +28,7 @@ function [downconverted_wave] = downconvert(wave)
     
     
     filtered = filter(x.FilterTest, 1, downconverted_wave);                % calculation of LPF impulse response
-    delay = floor((length(x.FilterTest))/2);                               %needs to be integer
+    delay = ceil((length(x.FilterTest)-1)/2);                               %needs to be integer
     downconverted_wave = [filtered(delay:end) zeros(1,delay)];             %padded 0s at the end to keep size for now
 %% DEBUG  
 %     figure;
