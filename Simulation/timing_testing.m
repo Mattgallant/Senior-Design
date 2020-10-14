@@ -46,6 +46,10 @@ pulseShaped = upfirdn((embeddedStream), rrcFilter, sps);
 
 %Upconversion
 txSig = upconvert(pulseShaped);
+%txSig = pulseShaped;
+
+scatterplot(txSig);
+title('upconverted tx');
 
 %% Channel
 %so far timingErr has not been tested much > 2733, working under assumption of similar good/bad numbers
@@ -73,12 +77,23 @@ rxSig = awgn(garbage, snr, 'measured');
 %rxSig = garbage;
 
 %Downconversion
-downconverted = downconvert(rxSig);
+downconverted = downconvert(rxSig); %no issues when skipping upconversion and downconversion for the bad numbers
+
+scatterplot(rxSig);
+title('received rx');
+
+scatterplot(downconverted);
+title('downconverted rx');
+
 
 %  Match (SRRC) Filtering
 rxFilt = filter(rrcFilter,1, downconverted);
+%rxFilt = filter(rrcFilter,1, rxSig);
 delay = ceil(length((rrcFilter - 1) / 2));
 match_filtered_signal = [rxFilt(delay:end)];
+
+%toSkip_rxFilt = upfirdn(downconverted, rrcFilter, 1, sps);
+%toSkip_match_filtered_signal = toSkip_rxFilt(span+1:end-span);
 
 scatterplot(match_filtered_signal);
 title('received matched rx');
