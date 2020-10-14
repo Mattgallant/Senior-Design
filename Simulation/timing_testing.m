@@ -48,11 +48,22 @@ pulseShaped = upfirdn((embeddedStream), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 
 %% Channel
-timingErr = 2700; % Samples of timing error --- around 2700 for 15 EbNo before BER accumulates
-fixedDelay = dsp.Delay(timingErr);
+%so far timingErr has not been tested much > 2733, working under assumption of similar good/bad numbers
+timingErr = 2733; % Samples of timing error --- jk inconsistent BER with different numbers but 2700 is safe for benchmarking
+%bad BER inconsistencies have zero_array size > 1
+%example bad timingErr is 131, 2733 is pseudo bad number
+%NOTE: higher SNR /does/ improve BER for some numbers (like 2733), but numbers like 131 stay bad
+
+fixedDelay = dsp.Delay(timingErr);  %code to simulate delay from https://www.mathworks.com/help/comm/ref/comm.symbolsynchronizer-system-object.html
 fixedDelaySym = ceil(fixedDelay.Length/sps); % Round fixed delay to nearest integer in symbols
-%garbage = fixedDelay(txSig.').'; this jut adds 0s but cuts off the end???
-garbage = [zeros(1, timingErr) txSig];
+%garbage = fixedDelay(txSig.').'; %this jut adds 0s but cuts off the end???
+%--- no significant difference for BER between top garbage and bottom garbage lines
+
+garbage = [zeros(1, timingErr) txSig]; %example delay but no cutting off the end
+%garbage = [zeros(1, ceil(timingErr/sps)) txSig];    %this works more often - 131 still causes BER but something like 2733 works with this but not previous one
+%--- one more thing of note for ^ ceil(2733/6) = 456, but timingErr = 76 (456/6) causes error for all - another bad number to ref
+%garbage = [randi([0 1],timingErr, 1).' txSig]; %this is the only one that causes size errors for some values that don't when zeroes is used
+%garbage = [randi([0 1],ceil(timingErr/sps), 1).' txSig];  %similar results to ceil with zeroes
 
 %garbage = [txSig]; %received is conglomerated at 0 when not a multiple of 6, but at -1,+1 ends when it is???
 EbNo = 15;
@@ -76,15 +87,18 @@ title('received matched rx');
 rxSync = TimingOffset(match_filtered_signal.', sps).';
 scatterplot(rxSync);
 title('offset corrected rx');
+disp("Length of timing offset signal: " + length(rxSync));
 
 % Training sequence detection (Carolyn)
 [retrieved_sequence, retrieved_data] = GolayDetection(real(rxSync), 128, training_sequence);
+disp("Length of retrieved_data: " + length(retrieved_data)); %skipping timing offset for bad numbers cause size issues
 
 %  Constellation DeMapping
 demodulated_bits =  Demodulation(retrieved_data);
 demodulated_bits = demodulated_bits(:);
 
 zero_array = zeros(1, length(modulated_bits)-length(demodulated_bits));
+disp("Length of zero_array: " + length(zero_array));
 demodulated_bits = [demodulated_bits.' zero_array];
 
 %  Channel Decoding
