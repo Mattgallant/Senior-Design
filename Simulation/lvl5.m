@@ -1,4 +1,4 @@
-%% LVL 4
+%% LVL 5
 %  Implemented - Input Data, TXT-To-Bitstream, Mapping, Training Injection,
 %  Channel Encoding, SRRC, Upconversion, Downconversion, Match Filtering,
 %  Training Sequence Detection, Decoding, Demapping, Bitstream-To-TXT
@@ -22,19 +22,6 @@ modulated_bits = real(BPSK_mapping(encoded_bits));
 
 % Training Sequence Injection (Carolyn)
 [bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
-% pnSequence = comm.PNSequence('Polynomial',[7 2 0],'SamplesPerFrame',128,'InitialConditions',[0 0 0 0 0 0 1]);
-% 
-% % Generate the PN training sequence
-% training_sequence = pnSequence();
-% training_sequence = training_sequence';
-% for bit = 1: length(training_sequence)
-%    if training_sequence(bit)== 0
-%         training_sequence(bit) = -1;
-%     end
-% end
-
-% Embed training sequence into bitstream
-embeddedStream = horzcat(training_sequence, modulated_bits);
     
 %  SRRC Filtering
 rolloff = 0.25;
@@ -44,54 +31,43 @@ M = 2;
 k = log2(M);
 
 rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
-pulseShaped = upfirdn(real(embeddedStream), rrcFilter, sps);
-
-% figure;
-% plottf(rrcFilter,1/Fs);
-% title("Filter")
+pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 
 %Upconversion
 txSig = upconvert(pulseShaped);
 
 %% Channel 
-EbNo = 15;
+EbNo = 10;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-% 
-% garbage = [randi([0 1],192, 1).' txSig];
-% rxSig = awgn(garbage, snr, 'measured');
-rxSig = awgn(txSig, snr, 'measured');
+
+garbage = [zeros(1, 500) txSig];            % Add garbage at front
+rxSig = awgn(garbage, snr, 'measured');     % Add noise
+% rxSig = awgn(txSig, snr, 'measured');
 % rxSig = garbage;
+
 %% Reciever
 
-%Downconversion
+% Downconversion
 downconverted = downconvert(rxSig);
 
 %  Match (SRRC) Filtering
-rxFilt = upfirdn(downconverted, rrcFilter, 1, sps);
-match_filtered_signal = rxFilt(span+1:end-span);
+rxFilt = filter(rrcFilter,1, downconverted);
+delay = ceil(length((rrcFilter - 1) / 2));
+match_filtered_signal = [rxFilt(delay:end)];
+
+% Timing offset
+rxSync = TimingOffset(match_filtered_signal.', sps).';
 
 % Training sequence detection (Carolyn)
-[retrieved_sequence, retrieved_data] = GolayDetection(match_filtered_signal, 128, training_sequence);
-
-% Checking the training sequence
-demodulated_training_rx = Demodulation(retrieved_sequence);
-demodulated_training_tx = Demodulation(training_sequence);
-[number, ratio] = biterr(demodulated_training_rx, demodulated_training_tx);
-disp("Training BER: " + ratio + " Number: " + number);
+[retrieved_sequence, retrieved_data] = GolayDetection(real(rxSync), 128, training_sequence);
 
 %  Constellation DeMapping
 demodulated_bits =  Demodulation(retrieved_data);
 demodulated_bits = demodulated_bits(:);
 
-% zero_array = zeros(1, length(modulated_bits)-length(demodulated_bits));
-% demodulated_bits = [demodulated_bits.' zero_array];
-
 %  Channel Decoding
-decoded_bits = TurboDecoding(demodulated_bits);
-
-%  Bitstream-To-TXT
-%text = Bitstream_to_Text(decoded_bits);
+decoded_bits = TurboDecoding(demodulated_bits.');
 
 %% Analysis
 
@@ -99,11 +75,9 @@ decoded_bits = TurboDecoding(demodulated_bits);
 [number, ratio] = biterr(sendable_bits(:), decoded_bits);
 disp("BER: " + ratio + " Number: " + number);
 
-% Checking the training sequence
-demodulated_training_rx = Demodulation(retrieved_sequence);
-demodulated_training_tx = Demodulation(training_sequence);
-[number, ratio] = biterr(demodulated_training_rx, demodulated_training_tx);
-disp("Training BER: " + ratio + " Number: " + number);
+%  Bitstream-To-TXT
+% text = Bitstream_to_Text(decoded_bits);
+% disp(text);
 
 %% DEBUG
 % figure;
@@ -125,3 +99,9 @@ disp("Training BER: " + ratio + " Number: " + number);
 % prbdet = comm.PreambleDetector(training_sequence.');
 % prbdet.Threshold = 50;
 % [idx,detmet] = prbdet(match_filtered_signal.');
+
+% Checking the training sequence
+% demodulated_training_rx = Demodulation(retrieved_sequence);
+% demodulated_training_tx = Demodulation(training_sequence);
+% [number, ratio] = biterr(demodulated_training_rx, demodulated_training_tx);
+% disp("Training BER: " + ratio + " Number: " + number);
