@@ -1,10 +1,9 @@
 %% LVL 4
 %  Implemented - Input Data, TXT-To-Bitstream, Consetellation Mapping, 
-%  Golay Injection, Channel Encoding, SRRC, Match Filtering,
-%  Golay Sequence Detection, AGC,  Decoding, Demapping, Bitstream-To-TXT
+%  Golay Injection, Channel Encoding, SRRC, Match Filtering, Timing Offset,
+%  Golay Sequence Detection, Upconversion, Downconversion, AGC, Decoding, Demapping, Bitstream-To-TXT
 
-%  Not yet implemented - Timing Offset, Carrier Offset, Channel estimation/equalization
-%  Downconversion, Upconversion
+%  Not yet implemented - Carrier Offset, Channel estimation/equalization
 
 Fs = 44100;
 %% Transmitter
@@ -35,28 +34,36 @@ rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
 pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 
 %Upconversion
-%txSig = upconvert(pulseShaped);
-txSig = pulseShaped;
+txSig = upconvert(pulseShaped);
+%txSig = pulseShaped;
 
 %% Channel
-garbage = [randi([0 1],2112, 1).' txSig]; 
+garbage = [zeros(1, 500) txSig];  
 EbNo = 5;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 rxSig = awgn(garbage, snr, 'measured');
-% rxSig = garbage;
+
+gainFactor = 1/4;
+rxSig = rxSig*gainFactor;
+SNR_ = (gainFactor^2)*snr;
+%receivedPower = mean(abs(rxSig).^2);
+%receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig));
 %% Reciever
 
 %Downconversion
-%downconverted = downconvert(rxSig);
-downconverted = rxSig;
+downconverted = downconvert(rxSig);
 
 %  Match (SRRC) Filtering
-rxFilt = upfirdn(downconverted, rrcFilter, 1, sps);
-match_filtered_signal = rxFilt(span+1:end-span);
+rxFilt = filter(rrcFilter,1, downconverted);
+delay = ceil(length((rrcFilter - 1) / 2));
+match_filtered_signal = [rxFilt(delay:end)];
+
+% Timing offset
+rxSync = TimingOffset(match_filtered_signal.', sps).';
 
 % Golay Sequence Detection
-[retrieved_sequence, retrieved_data] = GolayDetection(match_filtered_signal, 128, training_sequence);
+[retrieved_sequence, retrieved_data] = GolayDetection(rxSync, 128, training_sequence);
 disp("Length of retrieved_data: " + length(retrieved_data));
 
 scatterplot(retrieved_data);
@@ -73,9 +80,6 @@ title('Gain Corrected Signal');
 %  Constellation DeMapping
 demodulated_bits =  Demodulation(gainCorrectedSignal);
 demodulated_bits = demodulated_bits(:);
-
-zero_array = zeros(1, length(modulated_bits)-length(demodulated_bits));
-demodulated_bits = [demodulated_bits.' zero_array];
 
 %  Channel Decoding
 decoded_bits = TurboDecoding(demodulated_bits.');
