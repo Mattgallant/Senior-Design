@@ -1,9 +1,9 @@
 %% LVL 5
 %  Implemented - Input Data, TXT-To-Bitstream, Mapping, Training Injection,
 %  Channel Encoding, SRRC, Upconversion, Downconversion, Match Filtering,
-%  Training Sequence Detection, Decoding, Demapping, Bitstream-To-TXT
+%  Training Sequence Detection, Decoding, Demapping, Bitstream-To-TXT Timing Offset,
 
-%  Not yet implemented - Timing Offset, Carrier Offset, AGC, Channel estimation/equalization
+%  Not yet implemented - Carrier Offset, AGC, Channel estimation/equalization
 
 Fs = 44100;
 %% Transmitter
@@ -37,13 +37,12 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 
 %% Channel 
-EbNo = 10;
+EbNo = 5;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 
-garbage = [zeros(1, 500) txSig];            % Add garbage at front
+garbage = [zeros(1, 2112) txSig];            % Add garbage at front
 rxSig = awgn(garbage, snr, 'measured');     % Add noise
-% rxSig = awgn(txSig, snr, 'measured');
 % rxSig = garbage;
 
 %% Reciever

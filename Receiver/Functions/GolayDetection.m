@@ -15,11 +15,11 @@ function [retrieved_sequence, retrieved_data] = GolayDetection(data, sequence_le
     retrieved_sequence = data(headstart : headstart+sequence_length-1);
     retrieved_data = data(headstart+sequence_length : end);
     
-    figure;
-    stem(y)
-    title('Training Detection Correlation');
-    xlabel('Sample');
-    ylabel('Correlation');
+%     figure;
+%     stem(y)
+%     title('Training Detection Correlation');
+%     xlabel('Sample');
+%     ylabel('Correlation');
     
 
 end

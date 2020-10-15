@@ -5,7 +5,7 @@ function [received_binary] = Mic_to_Receiver(seconds)
 %   take 1 second for every 44100 samples of data. 
 %   Not too sure how to sure how to handle choosing how long to record as of now -Matt
     %% Create an audiorecorder object w/ Fs =44.1kHz, 8 bits per sample, 1 channel.
-    recObj = audiorecorder(44100,8,1); % THE 8 HERE MAY BE WRONG
+    recObj = audiorecorder(44100,16,1); % THE 8 HERE MAY BE WRONG
 
     %% Record Audio
     disp('Recording Started.')
@@ -14,9 +14,9 @@ function [received_binary] = Mic_to_Receiver(seconds)
 
     %% Convert to data array
     y = getaudiodata(recObj);           %Double as default
-    x = getaudiodata(recObj, 'int8');
-    b = de2bi(x);                       %Convert to binary
-    received_binary = reshape(b,1,[]);
+%     x = getaudiodata(recObj, 'int8');
+%     b = de2bi(x);                       %Convert to binary
+    received_binary = reshape(y,1,[]);
 
     %% Plot and play the sound data
     %play(recObj);                       %Play the recorded audio
