@@ -3,7 +3,7 @@
 M = 2;
 numTrainSymbols = 32;
 numDataSymbols = 180;
-SNR = 100;
+SNR = 20;
 rng default;
 
 % Generate Bits
@@ -28,14 +28,12 @@ trainingSymbols = complex(trainingSymbols');
 chCo=[1 0.1 -0.1]; 
 packet = [trainingSymbols; dataSym];
 channel = 1;
-rx = packet;
-%rx = awgn(packet, 1);
-%rx = filter(chCo,1,packet);
+% rx = packet;
+% rx = awgn(packet, 1);
+rx = filter(chCo,1,packet);
 
 % Channel Estimate
-dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS',...
-    'NumForwardTaps',5,'NumFeedbackTaps',4,...
-    'Constellation',pskmod((0:1)',2,0),'ReferenceTap',3,'StepSize',0.01);
+dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS','NumForwardTaps',4,'NumFeedbackTaps',3,'ReferenceTap',3,'StepSize',0.001);
 
 numPkts = 10;
 for ii = 1:numPkts
@@ -56,9 +54,10 @@ turbodec = comm.TurboDecoder(trellis, interleaver_indicies, 4);
 
 rx_bits = turbodec(rx_data);
 
+% rx_bits = rx_data;
+
 % Plot results
 error = rx_bits - bits;
-signals = [bits rx_bits error];
 bit_error_rate = nnz(error)/length(bits);
 
 disp(bit_error_rate);
