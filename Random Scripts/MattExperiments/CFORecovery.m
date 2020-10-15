@@ -28,14 +28,15 @@ k = log2(M);
 
 % Our RRC Filter
 rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
-txSig = upfirdn(modSig, rrcFilter, sps);
+pulseShaped = upfirdn(modSig, rrcFilter, sps);
 
 % Alternate SRRC Filter
 % txfilter = comm.RaisedCosineTransmitFilter('OutputSamplesPerSymbol',sps, ...
 %     'Gain',1);
 % rxfilter = comm.RaisedCosineReceiveFilter('InputSamplesPerSymbol',sps, 'DecimationFactor', sps);
 % txSig = txfilter(modSig);
-
+txSig = upconvert(pulseShaped.');
+% txSig = pulseShaped;
 
 %% Channel
 % Setup channel objects
@@ -47,12 +48,14 @@ phaseFreqOffset = comm.PhaseFrequencyOffset(...
 
 % Apply channel objects
 freqOffsetSig = phaseFreqOffset(txSig);
-
 rxSig = channel(freqOffsetSig);         % Apply AWGN
 
 %% Receiver
-constdiagram(rxSig)
-release(constdiagram);
+% constdiagram(rxSig)
+% release(constdiagram);
+
+% downconverted = downconvert(rxSig);
+downconverted=rxSig.';
 
 % Carrier Recovery
 coarseSync = comm.CoarseFrequencyCompensator('Modulation','BPSK','FrequencyResolution',1,'SampleRate',fs*sps);
@@ -61,8 +64,9 @@ fineSync = comm.CarrierSynchronizer('DampingFactor',0.7, ...
     'SamplesPerSymbol',sps, ...
     'Modulation','BPSK');
 
-syncCoarse = coarseSync(rxSig);
-rxData = fineSync(syncCoarse);
+% syncCoarse = coarseSync(downconverted.');
+% rxData = fineSync(syncCoarse);
+rxData = downconverted;
 
 rxFilt = upfirdn(rxData, rrcFilter, 1, sps);
 rxMatchedData = rxFilt(span+1:end-span);
@@ -80,4 +84,4 @@ rxDemod = Demodulation(rxMatchedData);
 [number, ratio] = biterr(data, rxDemod.');
 disp("BER: " + ratio + " Number: " + number);
 
-constdiagram(rxMatchedData);
+% constdiagram(rxMatchedData);
