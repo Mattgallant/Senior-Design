@@ -1,3 +1,4 @@
+
 %% LVL 6
 %  Implemented - Input Data, TXT-To-Bitstream, Consetellation Mapping, 
 %  Golay Injection, Channel Encoding, SRRC, Match Filtering, Timing Offset,
@@ -42,13 +43,10 @@ garbage = [zeros(1, 500) txSig];
 EbNo = 5;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
+gainFactor = 1/2;
+garbage = garbage*gainFactor;
 rxSig = awgn(garbage, snr, 'measured');
 
-gainFactor = 1/4;
-rxSig = rxSig*gainFactor;
-SNR_ = (gainFactor^2)*snr;
-%receivedPower = mean(abs(rxSig).^2);
-%receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig));
 %% Reciever
 
 %Downconversion
