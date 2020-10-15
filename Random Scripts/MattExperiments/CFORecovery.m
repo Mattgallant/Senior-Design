@@ -37,36 +37,53 @@ pulseShaped = upfirdn(modSig, rrcFilter, sps);
 % txSig = txfilter(modSig);
 txSig = upconvert(pulseShaped.');
 % txSig = pulseShaped;
-
 %% Channel
 % Setup channel objects
-channel = comm.AWGNChannel('EbNo',11,'BitsPerSymbol',k,'SamplesPerSymbol',sps);
+channel = comm.AWGNChannel('EbNo',10,'BitsPerSymbol',k,'SamplesPerSymbol',sps);
 phaseFreqOffset = comm.PhaseFrequencyOffset(...
-    'FrequencyOffset',0,...
+    'FrequencyOffset',10,...
     'PhaseOffset',0,...
     'SampleRate',fs);
 
+
+plotspec(txSig, 1/fs);
+title("Before Freq Offset")
+
 % Apply channel objects
 freqOffsetSig = phaseFreqOffset(txSig);
-rxSig = channel(freqOffsetSig);         % Apply AWGN
+figure;
+plotspec(freqOffsetSig, 1/fs);
+
+rxSig = channel(txSig);         % Apply AWGN
+% rxSig = txSig;
+
+% scatterplot(rxSig);
+
+% plotspec(rxSig, 1/fs);
+% title("After Freq Offset");
+
+% plotspec(rxSig, 1/fs);
 
 %% Receiver
 % constdiagram(rxSig)
 % release(constdiagram);
 
-% downconverted = downconvert(rxSig);
-downconverted=rxSig.';
+downconverted = downconvert(rxSig);
+% downconverted=rxSig.';
 
 % Carrier Recovery
 coarseSync = comm.CoarseFrequencyCompensator('Modulation','BPSK','FrequencyResolution',1,'SampleRate',fs*sps);
-fineSync = comm.CarrierSynchronizer('DampingFactor',0.7, ...
-    'NormalizedLoopBandwidth',0.005, ...
+fineSync = comm.CarrierSynchronizer('DampingFactor',0.4, ...
+    'NormalizedLoopBandwidth',0.001, ...
     'SamplesPerSymbol',sps, ...
     'Modulation','BPSK');
 
-% syncCoarse = coarseSync(downconverted.');
-% rxData = fineSync(syncCoarse);
-rxData = downconverted;
+syncCoarse = coarseSync(downconverted.');
+rxData = fineSync(syncCoarse);
+% rxData = downconverted;
+
+scatterplot(rxData);
+title("After Freq Recovery");
 
 rxFilt = upfirdn(rxData, rrcFilter, 1, sps);
 rxMatchedData = rxFilt(span+1:end-span);
