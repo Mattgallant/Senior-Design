@@ -1,26 +1,37 @@
+%% Params
 waveLength = 100;
-t = (0:0.01:10);
-w = 2*pi*9000;
-wave = 2*cos(2*pi*.5*t);
+t = (0:.01:10);
+fc = .5;
+fo = .5;
+po = -pi/2;
 
-% pfo = comm.PhaseFrequencyOffset('FrequencyOffset',1000, 'PhaseOffset', 45);
-t = (1:length(wave))';
-phaseOff = ( 2*pi*.9*t);
+%% Create Waves
+% Wave w/ no PO or FO
+w = 2*pi*fc;
+origWave = 2*cos(w*t);
 
-noisyData = wave.'.*exp(1j*phaseOff);
-% noisyData = single(awgn(wave.*exp(1j*phaseOff), 10));
+% Wave w/ Freq Offset
+newW = 2*pi*(fc+ fc*fo);
+disp("Central Freq is: " + fc +"Hz");
+disp("Freq offset was: " + fc*fo + "Hz" + " for a new central of: " + (fc + fc*fo) + "Hz");
+freqOffWave = 2*cos(newW*t);
 
-outSig = CarrierFrequencyOffset(noisyData');
+% Wave/ w Phase Offset
+phaseOffWave = 2*cos(w*t + po);
 
-% new_wave = step(pfo,wave);
-% % new_wave = pfo(wave);
+%% Plot
+figure;
+plottf(origWave,1);
+title("Original")
 
 figure;
-plot(t,noisyData(1:end));
-title("Wave w/ offset");
+plottf(2*sin(w*t),1);
+title("Sine");
+
 figure;
-plot(t, wave(1:end));
-title("Original wave");
+plottf(phaseOffWave,1);
+title("Phase Offset");
+
 figure;
-plot(t, outSig);
-title("Fixed?");
+plottf(freqOffWave,1);
+title("Freq Offset Wave");
