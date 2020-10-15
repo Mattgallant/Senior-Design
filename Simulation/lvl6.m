@@ -1,7 +1,8 @@
 %% LVL 4
 %  Implemented - Input Data, TXT-To-Bitstream, Consetellation Mapping, 
 %  Golay Injection, Channel Encoding, SRRC, Match Filtering, Timing Offset,
-%  Golay Sequence Detection, Upconversion, Downconversion, AGC, Decoding, Demapping, Bitstream-To-TXT
+%  Golay Sequence Detection, Upconversion, Downconversion, AGC, Decoding, 
+%  Demapping, Bitstream-To-TXT
 
 %  Not yet implemented - Carrier Offset, Channel estimation/equalization
 
