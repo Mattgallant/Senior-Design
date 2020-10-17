@@ -9,34 +9,27 @@ function [downconverted_wave] = downconvert(wave)
     
     % Create the carrier wave
     M = 6; %sps
-    t=1/M:1/M:length(wave)/M;              % T/M-spaced time vector
-    %t = (0:dt:(length(wave) - 1)/Fs);   % Create time vector for transmition. Recall want 44.1k "samples" per second.
+    %t=1/M:1/M:length(wave)/M;              % T/M-spaced time vector
+    t = (0:dt:(length(wave) - 1)/Fs);   % Create time vector for transmition. Recall want 44.1k "samples" per second.
     w = 2*pi*fc;      % Radian value to create 9kHz
     carrier = cos(w*t);             % Create carrier sinewave
-    
-    % Remove carrier wave
-    downconverted_wave = 2 .*( wave.* carrier);
-   
-%     figure;
-%     plotspec(downconverted_wave,1/Fs);
-%     title("Downconverted Data w/o LPF")
-    
-    %LPF --- working
+    %peak to peak is x=1 to x=6
+
     x = load('please.mat');      %done with filter design/fdatool
+    delay = ceil((length(x.FilterTest)-1)/2);                               %needs to be integer
+    % Remove carrier wave
+    downconverted_wave = 2 .*( wave .* carrier);
     
 %     figure;
-%     plottf(x.FilterTest,1/Fs);
-%     title("Pulse Shaped")
+%     plotspec(real(downconverted_wave), 1/44100);
+%     title('Downconverted Wave w/o LPF');
     
-    
+    %LPF
     filtered = filter(x.FilterTest, 1, downconverted_wave);                % calculation of LPF impulse response
-    delay = ceil((length(x.FilterTest)-1)/2);                               %needs to be integer
-    downconverted_wave = [filtered(delay:end) zeros(1,delay)];             %padded 0s at the end to keep size for now
+    downconverted_wave = [filtered(delay : end) zeros(1, delay)];
 %% DEBUG  
 %     figure;
-%     plot(t,wave.*carrier);
-%     xlabel('time (in seconds)');
+%     plotspec(real(downconverted_wave), 1/44100);
 %     title('Downconverted Wave w/ Data');
-%     zoom xon;
 end
 
