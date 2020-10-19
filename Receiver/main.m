@@ -70,5 +70,5 @@
     disp(text)
     
 %% Bit Error Rate Calculations
-% [number, ratio] = biterr(sendable_bits(:), decoded_bits);
-% disp(number);
+[number, ratio] = biterr(sendable_bits(:), decoded_bits);
+disp("BER: " + ratio + " Number: " + number);
