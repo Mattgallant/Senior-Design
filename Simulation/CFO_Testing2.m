@@ -9,7 +9,7 @@ Fs = 44100;
 %% Transmitter
 %  Input Data
 file_pointer= fopen("lorem.txt"); 
-read_length_characters = 2000; 
+read_length_characters = 200; 
 
 %  TXT-To-Bitstream
 [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
@@ -46,17 +46,17 @@ rxSig = awgn(garbage, snr, 'measured');     % Add noise
 % rxSig = garbage;
 scatterplot(rxSig)
 title('Transmitted signal w/ AWGN');
-figure;
-plotspec(rxSig, 1/Fs)
-title('Transmitted signal w/ AWGN');
+%figure;
+%plotspec(rxSig, 1/Fs)
+%title('Transmitted signal w/ AWGN');
 
 cfoRatio = .0001;
 cfo = rxSig.*exp(-j*2*pi*cfoRatio*(0:length(rxSig)-1));    % Apply CFO
 scatterplot(cfo)
 title('Transmitted signal w/ AWGN and CFO');
-figure;
-plotspec(cfo, 1/Fs)
-title('Transmitted signal w/ AWGN and CFO');
+%figure;
+%plotspec(cfo, 1/Fs)
+%title('Transmitted signal w/ AWGN and CFO');
 
 %% Reciever
 

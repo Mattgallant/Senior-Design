@@ -1,4 +1,4 @@
-%% LVL 6
+%% LVL 7
 %  Implemented - Input Data, TXT-To-Bitstream, Consetellation Mapping, 
 %  Golay Injection, Channel Encoding, SRRC, Match Filtering, Timing Offset,
 %  Golay Sequence Detection, Upconversion, Downconversion, AGC, Decoding, 
@@ -40,7 +40,7 @@ txSig = upconvert(pulseShaped);
 
 %% Channel
 garbage = [zeros(1, 500) txSig];  
-EbNo = 10;
+EbNo = 5;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
@@ -55,17 +55,16 @@ title('Constellation w/o CFO')
 gainFactor = 1;
 noisyGainSig = noisySig*gainFactor;
 
-pfo = comm.PhaseFrequencyOffset('PhaseOffset',120, ...
-    'FrequencyOffset',0,'SampleRate',44100);
+% How do you simulate cfo? x[n]*e^(j*2*pi*(delta f/fs)*n
+% x[n] is our signal, deltaf/fs is a ratio, n is sample length of signal
+cfoRatio = .0001;
+rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    % Apply CFO
+scatterplot(rxSig)
+title('Transmitted signal w/ CFO');
+%figure;
+%plotspec(cfo, 1/Fs)
+%title('Transmitted signal w/ AWGN and CFO');
 
-rxSig = pfo(noisyGainSig);
-
-scatterplot(rxSig(1:end));
-title('Constellation w/ CFO')
-
-% figure;
-% plottf(real(rxSig),1/Fs);
-% title("Constellation w/ CFO")
 
 % rxSig = noisyGainSig;
 % SNR_ = (gainFactor^2)*snr;
@@ -81,8 +80,13 @@ rxFilt = filter(rrcFilter,1, downconverted);
 delay = ceil(length((rrcFilter - 1) / 2));
 match_filtered_signal = [rxFilt(delay:end)];
 
+% Carrier Frequency Sync
+rxCFO = CarrierFrequencyOffset(match_filtered_signal);
+scatterplot(rxCFO)
+title('Received signal after CFO compensation');
+
 % Timing offset
-rxSync = TimingOffset(match_filtered_signal.', sps).';
+rxSync = TimingOffset(rxCFO, sps).';
 
 % Golay Sequence Detection
 [retrieved_sequence, retrieved_data] = GolayDetection(rxSync, 128, training_sequence);
@@ -91,9 +95,6 @@ rxSync = TimingOffset(match_filtered_signal.', sps).';
 estimatedGain = AGC_KnownFunction(retrieved_sequence, training_sequence);
 gainCorrectedSignal = retrieved_data./estimatedGain;
 gainCorrectedSequence = retrieved_sequence./estimatedGain;
-
-% Carrier Frequency Sync
-% compSignal = CarrierFrequencyOffset(gainCorrectedSignal);
 
 %  Constellation DeMapping
 demodulated_bits =  Demodulation(gainCorrectedSignal);
