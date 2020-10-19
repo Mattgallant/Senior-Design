@@ -19,5 +19,10 @@ function [yc] = MatchedFilter(b_data,nysm,beta,samplesPerSymbol,dataRate)
     yc = y(nysm+1:end-nysm);
 
     %t = 1000 * (0:length(b_data)*samplesPerSymbol-1) / Fc;
+    
+    
+    rxFilt = filter(rrcFilter,1, downconverted);
+delay = ceil(length((rrcFilter - 1) / 2));
+match_filtered_signal = [rxFilt(delay:end)];
 end
 

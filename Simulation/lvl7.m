@@ -36,11 +36,10 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 
 %Upconversion
 txSig = upconvert(pulseShaped);
-%txSig = pulseShaped;
 
 %% Channel
-garbage = [zeros(1, 500) txSig];  
-EbNo = 5;
+garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel 
+EbNo = 15;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
@@ -48,23 +47,18 @@ noisySig = awgn(garbage, snr, 'measured');
 scatterplot(noisySig(1:end));
 title('Constellation w/o CFO')
 
-% figure;
-% plottf(noisySig,1/Fs);
-% title("Constellation w/o CFO")
-
-gainFactor = 1;
+gainFactor = 3;
 noisyGainSig = noisySig*gainFactor;
 
-% How do you simulate cfo? x[n]*e^(j*2*pi*(delta f/fs)*n
-% x[n] is our signal, deltaf/fs is a ratio, n is sample length of signal
+% Add CFO
 cfoRatio = .0001;
-rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    % Apply CFO
+rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
 scatterplot(rxSig)
 title('Transmitted signal w/ CFO');
+
 %figure;
 %plotspec(cfo, 1/Fs)
 %title('Transmitted signal w/ AWGN and CFO');
-
 
 % rxSig = noisyGainSig;
 % SNR_ = (gainFactor^2)*snr;
@@ -104,7 +98,7 @@ demodulated_bits = demodulated_bits(:);
 decoded_bits = TurboDecoding(demodulated_bits.');
 
 %  Bitstream-To-TXT
-% text = Bitstream_to_Text(decoded_bits);
+text = Bitstream_to_Text(decoded_bits);
 
 %% Analysis
 
