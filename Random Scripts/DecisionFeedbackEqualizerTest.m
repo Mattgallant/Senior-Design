@@ -21,7 +21,7 @@ dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS', ...
 release(dfeq)
 jj = 1;
 figure
-chCo=[0.5 1 -0.6];              % define channel
+c             % define channel
 for ii = 1:numPkts
     b = randi([0 M-1],numDataSymbols,1);
     dataSym = bpsk(b);                          %changed from qpsk to bpsk

@@ -40,8 +40,8 @@ packet = [trainingSymbols; dataSym];
 
 % Add noise to the packet as it would experience being transmitted through a channel
 %rx = packet;
-rx = awgn(packet, SNR);
-%rx = filter(chCo,1,packet);
+chtaps = [1 0.5*exp(1i*pi/6) 0.1*exp(-1i*pi/8)];
+rx = awgn(filter(chtaps, 1, packet), 25, 'measured');
 
 % plot the noise signal
 scatterplot(rx)
@@ -50,7 +50,7 @@ grid on;
 
 % Channel Estimate
 %Initialize the Equalizer object, to tune it, change the taps integers
-dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS','NumForwardTaps',4,'NumFeedbackTaps',4,'ReferenceTap',4,'StepSize',0.001);
+dfeq = comm.DecisionFeedbackEqualizer('Algorithm','LMS','NumForwardTaps',4,'NumFeedbackTaps',3,'ReferenceTap',3,'StepSize',0.001);
 
 % Estimate the channel and equalize with each step, each packet you pass
 % will train the equalizer object and update its weights
@@ -70,7 +70,7 @@ grid on;
 
 % Demodulate
 bpskdemod = comm.BPSKDemodulator;
-rx_data = bpskdemod(dataSym);
+rx_data = bpskdemod(rx_equalized);
 
 % Decode
 original_length = (length(rx_data) - 18)/5;
