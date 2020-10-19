@@ -4,11 +4,11 @@
 %   and converts it to a text file
 
 function [textValues] = Bitstream_to_Text(bitstream)
-    disp(size(bitstream))
+%     disp(size(bitstream))
     reshapedArray = reshape(bitstream(:), 7, []).';  
-    disp(size(reshapedArray))
+%     disp(size(reshapedArray))
     binaryCharArray= num2str(reshapedArray);
-    disp(size(binaryCharArray))
+%     disp(size(binaryCharArray))
     decimalAsciiValues = bin2dec(binaryCharArray);
     textValues= char(decimalAsciiValues).';
 end
