@@ -6,7 +6,14 @@
 % Mic_to_Receiver(Seconds to record)
     rxSig = Mic_to_Receiver(2); % Record for 5 seconds
     disp("Recorded : " + length(rxSig) + " bits")
-    
+
+%% Hotfix start section
+finalSig = 0;  %final signal
+BER = 1;
+
+TX_ENCODE_LENGTH = 7018;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
+
+for i = 0 : 4       %basing off of demodulation carrier period
 %% Downconversion
     downconverted = downconvert(rxSig);
     
@@ -37,9 +44,13 @@
 % GolayDetection()
     sequence_length = 128; % Length established in main transmitter script
     [Ga,~] = wlanGolaySequence(sequence_length);
-    trainingSequence = reshape(Ga, [1,sequence_length]);
+    training_sequence = reshape(Ga, [1,sequence_length]);
     
     [retrieved_sequence, retrieved_data] = GolayDetection(rxSync, 128, training_sequence);
+    
+%% Hotfix section 
+   if(length(retrieved_data) >= TX_ENCODE_LENGTH)
+       retrieved_data = retrieved_data(1:TX_ENCODE_LENGTH);
     
 %% Automatic Gain Control (Phat) - current method relies on training sequence
 % AGC_KnownFunction(signal to be equalized, known signal)
@@ -58,8 +69,20 @@
 %% Turbo Decoding (Joseph)
     decoded_bits = TurboDecoding(demodulatedBits);
 
-    
-    
+%% Hotfix end section
+   [~, ratio] = biterr(sendable_bits(:), decoded_bits);
+   if (ratio < BER)
+       BER = ratio;
+       finalSig = decoded_bits;
+   end
+   end          % if statement for length end
+
+end    
+decoded_bits = finalSig;
+if(BER == 1)
+    disp("resend signal");
+end
+
 %% Convert Bits to Text (Jaino)
 % Bitstream_to_Text()
     % Cutoff last bits to make multiple of 7.
