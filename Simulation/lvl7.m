@@ -38,8 +38,14 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 
 %% Channel
-garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel 
-EbNo = 15;
+chtaps = [.2 0.5*exp(1i*pi/6) 0.1*exp(-1i*pi/8)];
+txSig = filter(chtaps, 1, txSig);
+
+garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
+
+
+
+EbNo = 10;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
@@ -47,7 +53,7 @@ noisySig = awgn(garbage, snr, 'measured');
 scatterplot(noisySig(1:end));
 title('Constellation w/o CFO')
 
-gainFactor = 3;
+gainFactor = 1;
 noisyGainSig = noisySig*gainFactor;
 
 % Add CFO
@@ -89,7 +95,7 @@ rxSync = TimingOffset(rxCFO, sps).';
 estimatedGain = AGC_KnownFunction(retrieved_sequence, training_sequence);
 gainCorrectedSignal = retrieved_data./estimatedGain;
 gainCorrectedSequence = retrieved_sequence./estimatedGain;
-rx_equalized= gainCorrectedSequence;
+% rx_equalized= gainCorrectedSequence;
 
 % Channel Estimation(Comment out the Line Below to Remove Channel
 % Estimation)
@@ -103,7 +109,7 @@ demodulated_bits = demodulated_bits(:);
 decoded_bits = TurboDecoding(demodulated_bits.');
 
 %  Bitstream-To-TXT
-text = Bitstream_to_Text(decoded_bits);
+% text = Bitstream_to_Text(decoded_bits);
 
 %% Analysis
 
