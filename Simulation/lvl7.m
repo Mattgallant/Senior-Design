@@ -89,9 +89,14 @@ rxSync = TimingOffset(rxCFO, sps).';
 estimatedGain = AGC_KnownFunction(retrieved_sequence, training_sequence);
 gainCorrectedSignal = retrieved_data./estimatedGain;
 gainCorrectedSequence = retrieved_sequence./estimatedGain;
+rx_equalized= gainCorrectedSequence;
+
+% Channel Estimation(Comment out the Line Below to Remove Channel
+% Estimation)
+[rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, training_sequence);
 
 %  Constellation DeMapping
-demodulated_bits =  Demodulation(gainCorrectedSignal);
+demodulated_bits =  Demodulation(rx_equalized);
 demodulated_bits = demodulated_bits(:);
 
 %  Channel Decoding

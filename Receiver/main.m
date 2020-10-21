@@ -57,14 +57,14 @@ for i = 0 : 4       %basing off of demodulation carrier period
     estimatedGain = AGC_KnownFunction(retrieved_sequence, training_sequence);
     gainCorrectedSignal = retrieved_data./estimatedGain;
     gainCorrectedSequence = retrieved_sequence./estimatedGain;
+    rx_equalized= gainCorrectedSequence;
 
 %% Channel Estimation and Equalization (Joseph) TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 % ChannelEqualization()
-%    [equalized_signal,~] = ChannelEqualization(gainCorrectedSignal, gainCorrectedSequence, trainingSequence);
+%    [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, originalTrainingSequence);
 
 %% Demodulation (Jaino)
-%     demodulatedBits = Demodulation(equalized_signal);
-    demodulatedBits =  Demodulation(gainCorrectedSequence);
+    demodulatedBits =  Demodulation(rx_equalized);
 
 %% Turbo Decoding (Joseph)
     decoded_bits = TurboDecoding(demodulatedBits);
