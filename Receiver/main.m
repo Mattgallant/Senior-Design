@@ -59,8 +59,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
     gainCorrectedSequence = retrieved_sequence./estimatedGain;
     rx_equalized= gainCorrectedSequence;
 
-%% Channel Estimation and Equalization (Joseph) TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-% ChannelEqualization()
+%% Channel Estimation and Equalization
 %    [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, originalTrainingSequence);
 
 %% Demodulation (Jaino)
