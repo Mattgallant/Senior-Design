@@ -75,12 +75,12 @@ Nbits = 8;          % Number of bits per sample
 nChannels = 1;      % Number of channels
 
 % Record Audio
-% recObj = audiorecorder(Fs, Nbits, nChannels);
-% recordblocking(recObj, .9);                      % Record 2 seconds
-% speech = getaudiodata(recObj).';
-% figure;
-% plottf(speech, 1/Fs);
-% title('Recorded Speech')
+recObj = audiorecorder(Fs, Nbits, nChannels);
+recordblocking(recObj, .9);                      % Record 2 seconds
+speech = getaudiodata(recObj).';
+figure;
+plottf(speech, 1/Fs);
+title('Recorded Speech')
 
 % Upconvert
 fc=12000;                       % Notice sampling rate >= 2*fc at 44.1khz
@@ -93,3 +93,22 @@ title("Upconverted Speech")
 playObj = audioplayer(s, Fs, Nbits);
 play(playObj)
 
+%% Receiving on carrier wave
+% Record Audio
+recObj = audiorecorder(Fs, Nbits, nChannels);
+recordblocking(recObj, 2);                      % Record 2 seconds
+sound = getaudiodata(recObj);
+figure;
+plottf(sound, 1/Fs);
+
+% Downconvert
+v = sound.* (2*cos(2*pi*fc*t));
+figure;
+plottf(v,1/Fs)
+title("Downconverted, no LPF")
+
+h = firlpf(49, 4200, 5000, Fs);
+filtered = filter(h,1,v);
+figure;
+plottf(filtered,1/Fs)
+title("Downconverted, w/ LPF")
