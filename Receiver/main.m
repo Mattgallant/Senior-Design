@@ -11,12 +11,13 @@
 finalSig = 0;  %final signal
 BER = 1;
 
-TX_ENCODE_LENGTH = 7018;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
+TX_ENCODE_LENGTH = 7017;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
+figure; plotspec(rxSig, 1/44100); title("received signal ");
 
 for i = 0 : 4       %basing off of demodulation carrier period
 %% Downconversion
     downconverted = downconvert(rxSig);
-    
+    figure; plotspec(downconverted, 1/44100); title(["signal run of ", num2str(i)]);
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
 % module
@@ -57,10 +58,10 @@ for i = 0 : 4       %basing off of demodulation carrier period
     estimatedGain = AGC_KnownFunction(retrieved_sequence, training_sequence);
     gainCorrectedSignal = retrieved_data./estimatedGain;
     gainCorrectedSequence = retrieved_sequence./estimatedGain;
-    rx_equalized= gainCorrectedSequence;
+%     rx_equalized= gainCorrectedSequence;
 
 %% Channel Estimation and Equalization
-%    [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, originalTrainingSequence);
+   [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, training_sequence);
 
 %% Demodulation (Jaino)
     demodulatedBits =  Demodulation(rx_equalized);
