@@ -39,6 +39,10 @@
 %% Upconversion (Matt)
 % upconvert
     txSig = upconvert(real(pulseShaped));
+    
+figure;
+plottf(txSig, 1/44100);
+title('Received Sound')
 
 %% Output to speaker (Matt)
 % transmitter_to_speaker

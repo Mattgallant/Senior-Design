@@ -4,11 +4,14 @@
     
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-    rxSig = Mic_to_Receiver(2); % Record for 5 seconds
+    rxSig = Mic_to_Receiver(3); % Record for 5 seconds
     disp("Recorded : " + length(rxSig) + " bits")
 %     [file, fs] = audioread('test.wav');
 %     noise = [zeros(1,15700) file.' zeros(1,29567)];
 %     rxSig = awgn(noise, 50, 'measured');
+%     figure;
+%     plottf(rxSig, 1/Fs);
+%     title('Received Sound')
 %% Hotfix start section
 finalSig = 0;  %final signal
 BER = 1;
