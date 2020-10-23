@@ -6,7 +6,9 @@
 % Mic_to_Receiver(Seconds to record)
     rxSig = Mic_to_Receiver(2); % Record for 5 seconds
     disp("Recorded : " + length(rxSig) + " bits")
-
+%     [file, fs] = audioread('test.wav');
+%     noise = [zeros(1,15700) file.' zeros(1,29567)];
+%     rxSig = awgn(noise, 50, 'measured');
 %% Hotfix start section
 finalSig = 0;  %final signal
 BER = 1;
@@ -15,6 +17,7 @@ TX_ENCODE_LENGTH = 7017;     %length of read characters from transmitter (for ha
 figure; plotspec(rxSig, 1/44100); title("received signal ");
 
 for i = 0 : 4       %basing off of demodulation carrier period
+    rxSig = rxSig(1+i:end);
 %% Downconversion
     downconverted = downconvert(rxSig);
     figure; plotspec(downconverted, 1/44100); title(["signal run of ", num2str(i)]);
