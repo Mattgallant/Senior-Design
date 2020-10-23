@@ -38,29 +38,31 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 
 %% Channel
-chtaps = [.2 0.5*exp(1i*pi/6) 0.1*exp(-1i*pi/8)];
-txSig = filter(chtaps, 1, txSig);
-
-garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
-
-
-
+% chtaps = [.2 0.5*exp(1i*pi/6) 0.1*exp(-1i*pi/8)];
 EbNo = 10;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-noisySig = awgn(garbage, snr, 'measured');
+noisySig = awgn(txSig, snr, 'measured');
+
+chtaps = [.4];
+txSig = filter(noisySig, 1, txSig);
+figure; plotspec(txSig, 1/44100);
+% garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
+
 
 scatterplot(noisySig(1:end));
 title('Constellation w/o CFO')
 
 gainFactor = 1;
-noisyGainSig = noisySig*gainFactor;
+noisyGainSig = txSig*gainFactor;
 
 % Add CFO
 cfoRatio = .0001;
 rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
 scatterplot(rxSig)
 title('Transmitted signal w/ CFO');
+
+garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
 
 %figure;
 %plotspec(cfo, 1/Fs)

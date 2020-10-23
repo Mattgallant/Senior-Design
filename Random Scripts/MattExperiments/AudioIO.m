@@ -71,37 +71,40 @@
 
 %% Putting it all together: Sending speech on carrier wave
 Fs = 44100;         % Sample rate in samples per second
-Nbits = 8;          % Number of bits per sample
+Nbits = 24;          % Number of bits per sample
 nChannels = 1;      % Number of channels
 
 % Record Audio
-recObj = audiorecorder(Fs, Nbits, nChannels);
-recordblocking(recObj, .9);                      % Record 2 seconds
-speech = getaudiodata(recObj).';
-figure;
-plottf(speech, 1/Fs);
-title('Recorded Speech')
+% recObj = audiorecorder(Fs, Nbits, nChannels);
+% recordblocking(recObj, .9);                      % Record 2 seconds
+% speech = getaudiodata(recObj).';
+% figure;
+% plottf(speech, 1/Fs);
+% title('Recorded Speech')
 
 % Upconvert
 fc=12000;                       % Notice sampling rate >= 2*fc at 44.1khz
-t =(0:length(speech)-1)/Fs;                % 250 milliseconds segment
-s = cos(2*pi*fc*t) .* speech;
-figure;plottf(s,1/Fs);
-title("Upconverted Speech")
+% t =(0:length(speech)-1)/Fs;                % 250 milliseconds segment
+% s = cos(2*pi*fc*t) .* speech;
+% figure;plottf(s,1/Fs);
+% title("Upconverted Speech")
 
 % Play Audio
-playObj = audioplayer(s, Fs, Nbits);
-play(playObj)
+% playObj = audioplayer(s, Fs, Nbits);
+% play(playObj)
 
 %% Receiving on carrier wave
 % Record Audio
 recObj = audiorecorder(Fs, Nbits, nChannels);
-recordblocking(recObj, 2);                      % Record 2 seconds
-sound = getaudiodata(recObj);
+recordblocking(recObj, 1.2);                      % Record 2 seconds
+sound = getaudiodata(recObj).';
 figure;
 plottf(sound, 1/Fs);
+title("Received Audio");
 
 % Downconvert
+t =(0:length(sound)-1)/Fs;                % 250 milliseconds segment
+
 v = sound.* (2*cos(2*pi*fc*t));
 figure;
 plottf(v,1/Fs)
@@ -112,3 +115,6 @@ filtered = filter(h,1,v);
 figure;
 plottf(filtered,1/Fs)
 title("Downconverted, w/ LPF")
+
+playObj = audioplayer(v, Fs, Nbits);
+play(playObj)
