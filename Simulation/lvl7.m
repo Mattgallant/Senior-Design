@@ -5,12 +5,12 @@
 %  Demapping, Bitstream-To-TXT, Carrier Offset. 
 
 %  Not yet implemented - Channel estimation/equalization
-
+close all;
 Fs = 44100;
 %% Transmitter
 %  Input Data
 file_pointer= fopen("lorem.txt"); 
-read_length_characters = 2000; 
+read_length_characters = 200; 
 
 %  TXT-To-Bitstream
 [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
@@ -23,6 +23,8 @@ modulated_bits = BPSK_mapping(encoded_bits);
 
 % Golay Sequence Injection
 [bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
+
+bitstream_with_injection = [bitstream_with_injection zeros(1, 1000)];
 
 %  SRRC Filtering
 rolloff = 0.25;
@@ -37,9 +39,11 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 %Upconversion
 txSig = upconvert(pulseShaped);
 
+% sound(txSig, 44100);
 %% Channel
+
 chtaps = [.2 0.5 0.1 sqrt(0.05/2)*(randn(1,20))]; % + 1i*randn(1,20))];
-txSig = filter(chtaps, 1, txSig);
+txSig = conv(chtaps, txSig);
 
 garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
 
@@ -48,7 +52,7 @@ garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simu
 % var_n = Ps/snr;
 % noisySig = rx_signal = tx_signal + sqrt(var_n/2)*(randn(size(tx_signal)) + 1i*randn(size(tx_signal)))
 
-EbNo = 20;
+EbNo = 50;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
@@ -61,8 +65,8 @@ noisyGainSig = noisySig*gainFactor;
 
 % Add CFO
 cfoRatio = .0001;
-rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
-% rxSig = noisyGainSig;
+% rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
+rxSig = noisyGainSig;
 scatterplot(rxSig)
 title('Transmitted signal w/ CFO');
 
@@ -75,13 +79,15 @@ title('Transmitted signal w/ CFO');
 % receivedPower = mean(abs(rxSig).^2);
 % receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig))
 %% Reciever
-scatterplot(rxSig);
+[rxSig,Fs] = audioread('rxSig.mp4');
+rxSig = rxSig.';
+% scatterplot(rxSig);
 
 %Downconversion
 downconverted = downconvert(rxSig);
 
 %  Match (SRRC) Filtering
-rxFilt = filter(rrcFilter,1, downconverted);
+rxFilt = conv(rrcFilter, downconverted);
 delay = ceil(length((rrcFilter - 1) / 2));
 match_filtered_signal = [rxFilt(delay:end)];
 
@@ -115,7 +121,7 @@ demodulated_bits =  Demodulation(rx_equalized);
 demodulated_bits = demodulated_bits(:);
 
 %  Channel Decoding
-decoded_bits = TurboDecoding(demodulated_bits.');
+decoded_bits = TurboDecoding(demodulated_bits(1:length(encoded_bits)).');
 
 %  Bitstream-To-TXT
 % text = Bitstream_to_Text(decoded_bits);
@@ -123,5 +129,5 @@ decoded_bits = TurboDecoding(demodulated_bits.');
 %% Analysis
 
 %  BER
-[number, ratio] = biterr(sendable_bits(:), decoded_bits);
+[number, ratio] = biterr(sendable_bits(:), decoded_bits(1:length(sendable_bits(:))));
 disp("BER: " + ratio + " Number: " + number);

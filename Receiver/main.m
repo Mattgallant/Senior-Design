@@ -42,7 +42,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
     % Create matched filter
     rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
 
-    rxFilt = filter(rrcFilter,1, downconverted);
+    rxFilt = conv(rrcFilter, downconverted);
     delay = ceil(length((rrcFilter - 1) / 2));
     match_filtered_signal = [rxFilt(delay:end)];
     

@@ -33,7 +33,6 @@
     k = log2(M);
 
     rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
-    
     pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
     
 %% Upconversion (Matt)
@@ -48,5 +47,6 @@ title('Received Sound')
 % transmitter_to_speaker
     disp("Sound playing for: " + length(txSig)/44100 + " seconds");
     transmitter_to_speaker(txSig);
+    
     audiowrite("test.mp4",txSig,44100)
    
