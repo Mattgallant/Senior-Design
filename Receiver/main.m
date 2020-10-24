@@ -5,19 +5,24 @@
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
     rxSig = Mic_to_Receiver(3); % Record for 5 seconds
-    disp("Recorded : " + length(rxSig) + " bits")
+%     audiowrite("test.mp4", rxSig, 44100);
+%     disp("Recorded : " + length(rxSig) + " bits")
 %     [file, fs] = audioread('test.wav');
 %     noise = [zeros(1,15700) file.' zeros(1,29567)];
 %     rxSig = awgn(noise, 50, 'measured');
 %     figure;
 %     plottf(rxSig, 1/Fs);
 %     title('Received Sound')
+
+    % Read in a prerecorded transmission instead
+%     [rxSig,Fs] = audioread('rxSig.mp4');
+%     rxSig = rxSig.';
 %% Hotfix start section
 finalSig = 0;  %final signal
 BER = 1;
 
 TX_ENCODE_LENGTH = 7017;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
-figure; plotspec(rxSig, 1/44100); title("received signal ");
+% figure; plotspec(rxSig, 1/44100); title("received signal ");
 
 for i = 0 : 4       %basing off of demodulation carrier period
     rxSig = rxSig(1+i:end);
@@ -45,7 +50,8 @@ for i = 0 : 4       %basing off of demodulation carrier period
     rxCFO = CarrierFrequencyOffset(match_filtered_signal);
 
 %% Timing Offset Recovery
-    rxSync = TimingOffset(rxCFO, sps).';
+    rxSync = TimingOffset(rxCFO(:), sps).';
+
     
 %% Training sequence detection (Carolyn)
 % GolayDetection()

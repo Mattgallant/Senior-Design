@@ -5,13 +5,14 @@ function [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorr
     %Turn original Training Sequence into Complex Values to train Equalizer
     complexTrainingSequence= complex(originalTrainingSequence);
     
-    
-    eq = comm.LinearEqualizer('Algorithm','LMS','ReferenceTap',1,'StepSize',0.001);
+    bpsk = comm.BPSKModulator;
+    eq = comm.LinearEqualizer('Algorithm','LMS','ReferenceTap',1,'StepSize',0.001, 'Constellation',bpsk((0:1)'));
     % Estimate the channel and equalize with each step, each packet you pass
     % will train the equalizer object and update its weights
     numPkts = 25;
+    
     for ii = 1:numPkts
-        [rx_equalized, err] = eq(gainCorrectedPacket.' , complexTrainingSequence.' );
+        [rx_equalized, err] = eq(complex(gainCorrectedPacket).' , complexTrainingSequence.');
     end
     [rx_equalized, err] = eq(gainCorrectedPacket.' , complexTrainingSequence.');
     % isolate the data from the training sequence

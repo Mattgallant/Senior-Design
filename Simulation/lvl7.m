@@ -38,41 +38,44 @@ pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
 txSig = upconvert(pulseShaped);
 
 %% Channel
-% chtaps = [.2 0.5*exp(1i*pi/6) 0.1*exp(-1i*pi/8)];
-EbNo = 10;
+chtaps = [.2 0.5 0.1 sqrt(0.05/2)*(randn(1,20))]; % + 1i*randn(1,20))];
+txSig = filter(chtaps, 1, txSig);
+
+garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
+
+
+% Ps = mean(abs(txSig).^2);
+% var_n = Ps/snr;
+% noisySig = rx_signal = tx_signal + sqrt(var_n/2)*(randn(size(tx_signal)) + 1i*randn(size(tx_signal)))
+
+EbNo = 20;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
-noisySig = awgn(txSig, snr, 'measured');
-
-chtaps = [.4];
-txSig = filter(noisySig, 1, txSig);
-figure; plotspec(txSig, 1/44100);
-% garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
-
+noisySig = awgn(garbage, snr, 'measured');
 
 scatterplot(noisySig(1:end));
 title('Constellation w/o CFO')
 
 gainFactor = 1;
-noisyGainSig = txSig*gainFactor;
+noisyGainSig = noisySig*gainFactor;
 
 % Add CFO
 cfoRatio = .0001;
 rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
+% rxSig = noisyGainSig;
 scatterplot(rxSig)
 title('Transmitted signal w/ CFO');
 
-garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
-
 %figure;
-%plotspec(cfo, 1/Fs)
+% plotspec(cfo, 1/Fs)
 %title('Transmitted signal w/ AWGN and CFO');
 
 % rxSig = noisyGainSig;
 % SNR_ = (gainFactor^2)*snr;
 % receivedPower = mean(abs(rxSig).^2);
-% receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig));
+% receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig))
 %% Reciever
+scatterplot(rxSig);
 
 %Downconversion
 downconverted = downconvert(rxSig);
@@ -83,12 +86,12 @@ delay = ceil(length((rrcFilter - 1) / 2));
 match_filtered_signal = [rxFilt(delay:end)];
 
 % Carrier Frequency Sync
-rxCFO = CarrierFrequencyOffset(match_filtered_signal);
+rxCFO =CarrierFrequencyOffset(match_filtered_signal);
 scatterplot(rxCFO)
 title('Received signal after CFO compensation');
 
 % Timing offset
-rxSync = TimingOffset(rxCFO, sps).';
+rxSync = TimingOffset(rxCFO(:), sps).';
 
 % Golay Sequence Detection
 [retrieved_sequence, retrieved_data] = GolayDetection(rxSync, 128, training_sequence);
@@ -102,6 +105,10 @@ gainCorrectedSequence = retrieved_sequence./estimatedGain;
 % Channel Estimation(Comment out the Line Below to Remove Channel
 % Estimation)
 [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, training_sequence);
+
+figure;
+scatterplot(rx_equalized);
+title("After equalization")
 
 %  Constellation DeMapping
 demodulated_bits =  Demodulation(rx_equalized);
