@@ -41,18 +41,16 @@ txSig = upconvert(pulseShaped);
 
 % sound(txSig, 44100);
 %% Channel
-
-chtaps = [.2 0.5 0.1 sqrt(0.05/2)*(randn(1,20))]; % + 1i*randn(1,20))];
+chtaps = [1 0.5 0.1 sqrt(0.05/2)*(randn(1,20))]; % + 1i*randn(1,20))];
 txSig = conv(chtaps, txSig);
 
 garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
-
 
 % Ps = mean(abs(txSig).^2);
 % var_n = Ps/snr;
 % noisySig = rx_signal = tx_signal + sqrt(var_n/2)*(randn(size(tx_signal)) + 1i*randn(size(tx_signal)))
 
-EbNo = 50;
+EbNo = 20;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
@@ -79,8 +77,8 @@ title('Transmitted signal w/ CFO');
 % receivedPower = mean(abs(rxSig).^2);
 % receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig))
 %% Reciever
-[rxSig,Fs] = audioread('rxSig.mp4');
-rxSig = rxSig.';
+% [rxSig,Fs] = audioread('rxSig.mp4');
+% rxSig = rxSig.';
 % scatterplot(rxSig);
 
 %Downconversion
@@ -92,12 +90,12 @@ delay = ceil(length((rrcFilter - 1) / 2));
 match_filtered_signal = [rxFilt(delay:end)];
 
 % Carrier Frequency Sync
-rxCFO =CarrierFrequencyOffset(match_filtered_signal);
+rxCFO =(1/2)*CarrierFrequencyOffset(match_filtered_signal);
 scatterplot(rxCFO)
 title('Received signal after CFO compensation');
 
 % Timing offset
-rxSync = TimingOffset(rxCFO(:), sps).';
+rxSync = TimingOffset(rxCFO(:), sps).'; %rxCFO(1:sps:end); 
 
 % Golay Sequence Detection
 [retrieved_sequence, retrieved_data] = GolayDetection(rxSync, 128, training_sequence);
@@ -108,8 +106,7 @@ gainCorrectedSignal = retrieved_data./estimatedGain;
 gainCorrectedSequence = retrieved_sequence./estimatedGain;
 % rx_equalized= gainCorrectedSequence;
 
-% Channel Estimation(Comment out the Line Below to Remove Channel
-% Estimation)
+% Channel Estimation(Comment out the Line Below to Remove Channel Estimation)
 [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, training_sequence);
 
 figure;

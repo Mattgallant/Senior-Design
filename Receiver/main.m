@@ -1,10 +1,12 @@
 % main script for the receiver. All receiver functions should be
 % plugged into this file.
 % Subteam: Joseph, Austin, Phat & Carolyn
-    
+close all;
+
+
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-    rxSig = Mic_to_Receiver(3); % Record for 5 seconds
+%     rxSig = Mic_to_Receiver(3); % Record for 5 seconds
 %     audiowrite("test.mp4", rxSig, 44100);
 %     disp("Recorded : " + length(rxSig) + " bits")
 %     [file, fs] = audioread('test.wav');
@@ -15,8 +17,9 @@
 %     title('Received Sound')
 
     % Read in a prerecorded transmission instead
-%     [rxSig,Fs] = audioread('rxSig.mp4');
-%     rxSig = rxSig.';
+    [rxSig,Fs] = audioread('rxSig.mp4');
+    rxSig = rxSig.';
+    plot(rxSig);
 %% Hotfix start section
 finalSig = 0;  %final signal
 BER = 1;
@@ -52,7 +55,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
 %% Timing Offset Recovery
     rxSync = TimingOffset(rxCFO(:), sps).';
 
-    
+ 
 %% Training sequence detection (Carolyn)
 % GolayDetection()
     sequence_length = 128; % Length established in main transmitter script
