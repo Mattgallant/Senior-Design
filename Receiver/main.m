@@ -6,8 +6,8 @@ close all;
 
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-%     rxSig = Mic_to_Receiver(3); % Record for 5 seconds
-%     audiowrite("test.mp4", rxSig, 44100);
+    rxSig = Mic_to_Receiver(3); % Record for 5 seconds
+    audiowrite("test.mp4", rxSig, 44100);
 %     disp("Recorded : " + length(rxSig) + " bits")
 %     [file, fs] = audioread('test.wav');
 %     noise = [zeros(1,15700) file.' zeros(1,29567)];
@@ -17,9 +17,9 @@ close all;
 %     title('Received Sound')
 
     % Read in a prerecorded transmission instead
-    [rxSig,Fs] = audioread('rxSig.mp4');
-    rxSig = rxSig.';
-    plot(rxSig);
+%     [rxSig,Fs] = audioread('rxSig.mp4');
+%     rxSig = rxSig.';
+%     plot(rxSig);
 %% Hotfix start section
 finalSig = 0;  %final signal
 BER = 1;
@@ -31,7 +31,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
     rxSig = rxSig(1+i:end);
 %% Downconversion
     downconverted = downconvert(rxSig);
-    figure; plotspec(downconverted, 1/44100); title(["signal run of ", num2str(i)]);
+%     figure; plotspec(downconverted, 1/44100); title(["signal run of ", num2str(i)]);
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
 % module

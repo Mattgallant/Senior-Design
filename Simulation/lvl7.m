@@ -77,8 +77,8 @@ title('Transmitted signal w/ CFO');
 % receivedPower = mean(abs(rxSig).^2);
 % receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig))
 %% Reciever
-% [rxSig,Fs] = audioread('rxSig.mp4');
-% rxSig = rxSig.';
+[rxSig,Fs] = audioread('rxSig.mp4');
+rxSig = rxSig.';
 % scatterplot(rxSig);
 
 %Downconversion
