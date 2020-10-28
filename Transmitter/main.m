@@ -39,14 +39,14 @@
 % upconvert
     txSig = upconvert(real(pulseShaped));
     
-figure;
-plottf(txSig, 1/44100);
-title('Received Sound')
+% figure;
+% plottf(txSig, 1/44100);
+% title('Received Sound')
 
 %% Output to speaker (Matt)
 % transmitter_to_speaker
     disp("Sound playing for: " + length(txSig)/44100 + " seconds");
-    transmitter_to_speaker(txSig);
+    transmitter_to_speaker(1*txSig);
     
-    audiowrite("test.mp4",txSig,44100)
+%     audiowrite("test.mp4",txSig,44100)
    
