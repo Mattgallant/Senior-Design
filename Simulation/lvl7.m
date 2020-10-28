@@ -14,12 +14,16 @@ read_length_characters = 200;
 
 %  TXT-To-Bitstream
 [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
+scatterplot(sendable_bits);
+title('Plot of Bits Being Sent');
 
 %  Channel Encoding
 encoded_bits = turbo_encoding(sendable_bits.');
 
 %  Constellation Mapping
 modulated_bits = BPSK_mapping(encoded_bits);
+scatterplot(modulated_bits);
+title('Constellation Diagram after BPSK');
 
 % Golay Sequence Injection
 [bitstream_with_injection, training_sequence] =  golay_injection(modulated_bits, 128);
@@ -35,9 +39,13 @@ k = log2(M);
 
 rrcFilter = rcosdesign(rolloff, span, sps,'sqrt');
 pulseShaped = upfirdn(real(bitstream_with_injection), rrcFilter, sps);
+%fvtool(pulseShaped,'Analysis','impulse')
+%title('SRRC');
 
 %Upconversion
 txSig = upconvert(pulseShaped);
+scatterplot(txSig);
+title('Transmitted Signal');
 
 % sound(txSig, 44100);
 %% Channel
@@ -55,18 +63,18 @@ snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
 
-scatterplot(noisySig(1:end));
-title('Constellation w/o CFO')
+%scatterplot(noisySig(1:end));
+%title('Constellation w/o CFO')
 
 gainFactor = 1;
 noisyGainSig = noisySig*gainFactor;
 
 % Add CFO
 cfoRatio = .0001;
-% rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
-rxSig = noisyGainSig;
+rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
+%rxSig = noisyGainSig;
 scatterplot(rxSig)
-title('Transmitted signal w/ CFO');
+title('Received Signal');
 
 %figure;
 % plotspec(cfo, 1/Fs)
@@ -76,9 +84,9 @@ title('Transmitted signal w/ CFO');
 % SNR_ = (gainFactor^2)*snr;
 % receivedPower = mean(abs(rxSig).^2);
 % receivedSignal = rxSig + sqrt(receivedPower/SNR_)*randn(1,length(rxSig))
-%% Reciever
-[rxSig,Fs] = audioread('rxSig.mp4');
-rxSig = rxSig.';
+%% Receiver
+% [rxSig,Fs] = audioread('rxSig.mp4');
+% rxSig = rxSig.';
 % scatterplot(rxSig);
 
 %Downconversion
@@ -109,9 +117,8 @@ gainCorrectedSequence = retrieved_sequence./estimatedGain;
 % Channel Estimation(Comment out the Line Below to Remove Channel Estimation)
 [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, training_sequence);
 
-figure;
 scatterplot(rx_equalized);
-title("After equalization")
+title("After Equalization")
 
 %  Constellation DeMapping
 demodulated_bits =  Demodulation(rx_equalized);
@@ -119,6 +126,8 @@ demodulated_bits = demodulated_bits(:);
 
 %  Channel Decoding
 decoded_bits = TurboDecoding(demodulated_bits(1:length(encoded_bits)).');
+scatterplot(decoded_bits);
+title("After Decoding")
 
 %  Bitstream-To-TXT
 % text = Bitstream_to_Text(decoded_bits);
