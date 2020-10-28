@@ -6,7 +6,7 @@ close all;
 
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-    rxSig = Mic_to_Receiver(3); % Record for 5 seconds
+    rxSig = Mic_to_Receiver(5); % Record for 5 seconds
     audiowrite("test.mp4", rxSig, 44100);
 %     disp("Recorded : " + length(rxSig) + " bits")
 %     [file, fs] = audioread('test.wav');
@@ -38,7 +38,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
     %Filter properties - Make sure these match transmitter values 
     rolloff = 0.25;
     span = 10;
-    sps = 6;
+    sps = 11;
     M = 2;
     k = log2(M);
     
