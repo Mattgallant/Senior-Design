@@ -15,8 +15,8 @@ function [downconverted_wave] = downconvert(wave)
     carrier = cos(w*t);             % Create carrier sinewave
     %peak to peak is x=1 to x=6
 
-    x = load('please.mat');      %done with filter design/fdatool
-    delay = ceil((length(x.FilterTest)-1)/2);                               %needs to be integer
+    x = load('LPF.mat');      %done with filter design/fdatool
+    delay = ceil((length(x.Num)-1)/2);                               %needs to be integer
     % Remove carrier wave
     downconverted_wave = 2 .*( wave .* carrier);
     
@@ -25,7 +25,7 @@ function [downconverted_wave] = downconvert(wave)
 %     title('Downconverted Wave w/o LPF');
     
     %LPF
-    filtered = filter(x.FilterTest, 1, downconverted_wave);                % calculation of LPF impulse response
+    filtered = filter(x.Num, 1, downconverted_wave);                % calculation of LPF impulse response
     downconverted_wave = [filtered(delay : end) zeros(1, delay)];
 %% DEBUG  
 %     figure;
