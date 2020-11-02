@@ -10,7 +10,7 @@ Fs = 44100;
 %% Transmitter
 %  Input Data
 file_pointer= fopen("lorem.txt"); 
-read_length_characters = 200; 
+read_length_characters = 50; 
 
 %  TXT-To-Bitstream
 [source_characters, sendable_bits] = text_to_bitstream(file_pointer, read_length_characters);
@@ -33,7 +33,7 @@ bitstream_with_injection = [bitstream_with_injection zeros(1, 1000)];
 %  SRRC Filtering
 rolloff = 0.25;
 span = 10;
-sps = 6;
+sps = 12;
 M = 2;
 k = log2(M);
 
@@ -58,7 +58,7 @@ garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simu
 % var_n = Ps/snr;
 % noisySig = rx_signal = tx_signal + sqrt(var_n/2)*(randn(size(tx_signal)) + 1i*randn(size(tx_signal)))
 
-EbNo = 20;
+EbNo = 40;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
