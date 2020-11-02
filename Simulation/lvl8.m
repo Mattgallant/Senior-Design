@@ -1,7 +1,7 @@
 
 %% Input Data (Text File, String)
     file_pointer= fopen("lorem.txt");   %Open file to read from
-    read_length_characters = 2000;
+    read_length_characters = 200;
 
 %% Bitstream Conversion (Jaino)
 % text_to_bitstream
@@ -68,7 +68,7 @@ title('Received Signal');
 finalSig = 0;  %final signal
 BER = 1;
 
-TX_ENCODE_LENGTH = 70018;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
+TX_ENCODE_LENGTH = 7017;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
 % figure; plotspec(rxSig, 1/44100); title("received signal ");
 
 for i = 0 : 4       %basing off of demodulation carrier period

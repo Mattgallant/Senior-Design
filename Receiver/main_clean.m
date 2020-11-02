@@ -2,8 +2,7 @@ close all;
 
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-    rxSig = Mic_to_Receiver(5); % Record for 5 seconds
-    audiowrite("test.mp4", rxSig, 44100);
+    rxSig = Mic_to_Receiver(3.5); % Record for 5 seconds
 
 %% Hotfix start section
 finalSig = 0;  %final signal
