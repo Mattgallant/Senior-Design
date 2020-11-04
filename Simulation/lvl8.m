@@ -37,30 +37,23 @@
     txSig = upconvert(real(pulseShaped));
     
 %% Channel
-chtaps = [1 0.5 0.1 sqrt(0.05/2)*(randn(1,20))]; % + 1i*randn(1,20))];
+
+% Add simulated multipath interference
+chtaps = [1 0.5 0.1 sqrt(0.05/2)*(randn(1,20))]; 
 txSig = conv(chtaps, txSig);
 
-garbage = [zeros(1, 233435) txSig];        % Add some garbage at the end to simulate channel
+% Add garbage at start of signal to simulate timing offset
+garbage = [zeros(1, 233435) txSig];       
 
-% Ps = mean(abs(txSig).^2);
-% var_n = Ps/snr;
-% noisySig = rx_signal = tx_signal + sqrt(var_n/2)*(randn(size(tx_signal)) + 1i*randn(size(tx_signal)))
-
+% Add Noise (AWGN)
 EbNo = 25;
 snr = EbNo + 10*log10(k) - 10*log10(sps);
 disp("SNR: " + snr)
 noisySig = awgn(garbage, snr, 'measured');
 
-%scatterplot(noisySig(1:end));
-%title('Constellation w/o CFO')
-
-gainFactor = 1;
-noisyGainSig = noisySig*gainFactor;
-
-% Add CFO
+% Add CFO (Propogation Delay, Doppler Effect)
 cfoRatio = .0001;
 rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
-%rxSig = noisyGainSig;
 scatterplot(rxSig)
 title('Received Signal');    
     
@@ -69,13 +62,13 @@ finalSig = 0;  %final signal
 BER = 1;
 
 TX_ENCODE_LENGTH = 7017;     %length of read characters from transmitter (for hardcoding size) (formula seems to be length * 35 + 18)
-% figure; plotspec(rxSig, 1/44100); title("received signal ");
 
 for i = 0 : 4       %basing off of demodulation carrier period
     rxSig = rxSig(1+i:end);
+    
 %% Downconversion
     downconverted = downconvert(rxSig);
-%     figure; plotspec(downconverted, 1/44100); title(["signal run of ", num2str(i)]);
+
 %% Matched Filter (Neel)
 % MatchedFilter - takes in: equalized_signal as the result of the previous
 % module
@@ -99,7 +92,6 @@ for i = 0 : 4       %basing off of demodulation carrier period
 %% Timing Offset Recovery
     rxSync = TimingOffset(rxCFO(:), sps).';
 
- 
 %% Training sequence detection (Carolyn)
 % GolayDetection()
     sequence_length = 128; % Length established in main transmitter script
@@ -117,7 +109,6 @@ for i = 0 : 4       %basing off of demodulation carrier period
     estimatedGain = AGC_KnownFunction(retrieved_sequence, training_sequence);
     gainCorrectedSignal = retrieved_data./estimatedGain;
     gainCorrectedSequence = retrieved_sequence./estimatedGain;
-%     rx_equalized= gainCorrectedSequence;
 
 %% Channel Estimation and Equalization
    [rx_equalized, err] = ChannelEstimation(gainCorrectedSequence, gainCorrectedSignal, training_sequence);

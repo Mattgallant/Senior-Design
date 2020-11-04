@@ -18,7 +18,7 @@ function [downconverted_wave] = downconvert(wave)
     % Remove carrier wave
     downconverted_wave = 2 .*( wave .* carrier);
    
-    Lh = 200;                        % Impulse response length
+    Lh = 201;                        % Impulse response length
     Fpb = 2400;                     % Passband Edge in Hz
     Fsb = 2900;                     % Stopband edge in Hz
     Fs = 44100;
