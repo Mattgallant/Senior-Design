@@ -3,7 +3,7 @@ function [upconverted_wave] = upconvert(wave)
 %   Takes SRRC filtered digital signal (WAVE) and multiplies it by an
 %   appropriate carrier wave. The upconverted wave should be a sine wave
 %   and have center frequency of 9kHz. Returns the UPCONVERTED_WAVE.
-    fc = 9000;    % As per project definition, center freq 9kHz
+    fc = 6000;    % As per project definition, center freq 9kHz
     Fs = 44100;                 % Sampling Frequency of 44.1kHz (Samples per Second)
     dt = 1/Fs;                  % Seconds per sample
     

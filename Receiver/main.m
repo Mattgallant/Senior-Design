@@ -38,7 +38,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
     %Filter properties - Make sure these match transmitter values 
     rolloff = 0.25;
     span = 10;
-    sps = 11;
+    sps = 6;
     M = 2;
     k = log2(M);
     

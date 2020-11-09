@@ -23,7 +23,7 @@
 %   Filter properties
     rolloff = 0.25;
     span = 10;
-    sps = 11;
+    sps = 6;
     M = 2;
     k = log2(M);
 
