@@ -25,7 +25,7 @@
 %   Filter properties
     rolloff = 0.25;
     span = 10;
-    sps = 11;
+    sps = 6;
     M = 2;
     k = log2(M);
 
@@ -53,7 +53,7 @@ noisySig = awgn(garbage, snr, 'measured');
 
 % Add CFO (Propogation Delay, Doppler Effect)
 cfoRatio = .0001;
-rxSig = noisyGainSig.*exp(-j*2*pi*cfoRatio*(0:length(noisyGainSig)-1));    
+rxSig = noisySig.*exp(-j*2*pi*cfoRatio*(0:length(noisySig)-1));    
 scatterplot(rxSig)
 title('Received Signal');    
     
@@ -75,7 +75,7 @@ for i = 0 : 4       %basing off of demodulation carrier period
     %Filter properties - Make sure these match transmitter values 
     rolloff = 0.25;
     span = 10;
-    sps = 11;
+    sps = 6;
     M = 2;
     k = log2(M);
     
