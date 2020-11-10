@@ -6,7 +6,7 @@ close all;
 
 %% Input from microphone (Matt)
 % Mic_to_Receiver(Seconds to record)
-    rxSig = Mic_to_Receiver(5); % Record for 5 seconds
+    rxSig = Mic_to_Receiver(3); % Record for 5 seconds
     audiowrite("test.mp4", rxSig, 44100);
 %     disp("Recorded : " + length(rxSig) + " bits")
 %     [file, fs] = audioread('test.wav');

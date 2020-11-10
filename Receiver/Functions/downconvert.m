@@ -3,7 +3,8 @@ function [downconverted_wave] = downconvert(wave)
 %   Takes SRRC filtered digital signal (WAVE) and multiplies it by an
 %   appropriate carrier wave. The downconverted wave should be a cos wave
 %   and have center frequency of 9kHz. Returns the DOWNCONVERTED_WAVE.
-    fc = 12000;    % As per project definition, center freq 9kHz
+
+    fc = 6000;    % As per project definition, center freq 9kHz
     Fs = 44100;                 % Sampling Frequency of 44.1kHz (Samples per Second)
     dt = 1/Fs;                  % Seconds per sample
     
